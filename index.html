@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sera inteligentă</title>
+<link rel="icon" type="image/png" href="/icon.png">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00b074">
+
+    <style>
+        :root {
+            --bg: #f3f4f7;
+            --card: #ffffff;
+            --accent: #00b074;
+            --accent-soft: #e2f7ef;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --danger: #ef4444;
+            --radius-lg: 18px;
+            --shadow-soft: 0 18px 35px rgba(15, 23, 42, 0.10);
+            --shadow-small: 0 6px 15px rgba(15, 23, 42, 0.08);
+            --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                         "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+      body {
+    margin: 0;
+    padding: 20px;
+    font-family: var(--font-main);
+    background: linear-gradient(135deg, #eafff3 0%, #b8ffd0 40%, #8df6b7 100%);
+    color: var(--text-main);
+    font-size: 18px;               /* ERA 16 → acum totul mai mare */
+}
+
+
+      .screen {
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* Desktop / laptop */
+/* Desktop scaling */
+@media (min-width: 900px) {
+
+    .screen {
+        max-width: 1250px;         /* mai lat pe laptop */
+    }
+
+    h1, h2, h3 {
+        font-size: 28px;
+    }
+
+    .card-title {
+        font-size: 18px !important;
+    }
+
+    .metric-value {
+        font-size: 24px !important;
+    }
+
+    .metric-label {
+        font-size: 16px !important;
+    }
+
+    .temp-main {
+        font-size: 58px;           /* era 40 → mult mai vizibil */
+    }
+
+    .fan-value-main {
+        font-size: 32px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+        width: 28px;
+        height: 28px;
+    }
+
+    .mode-labels span {
+        padding: 8px 16px;         /* tab-uri mai mari */
+        font-size: 16px;
+    }
+
+    .toggle {
+        transform: scale(1.3);     /* butonul Mod mai mare */
+    }
+}
+
+
+
+        /* header bar */
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .top-left {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .location-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .location-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .top-right {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #ecfdf5;
+            color: #047857;
+            font-size: 11px;
+            font-weight: 600;
+            gap: 6px;
+        }
+
+        .pill-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.35);
+        }
+
+        /* main card */
+
+       .card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;            /* ERA 16px → card vizibil mai mare */
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 26px;           /* mai mult spațiu */
+    transform: scale(1.05);        /* crește dimensiunea cardului */
+}
+
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .temp-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        .temp-main {
+            font-size: 40px;
+            font-weight: 700;
+        }
+
+        .temp-main span {
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .temp-extra {
+            display: flex;
+            flex-direction: column;
+            font-size: 12px;
+            color: var(--text-muted);
+            gap: 2px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: #f3f4ff;
+            color: #4f46e5;
+            font-size: 11px;
+            gap: 6px;
+        }
+
+        .chip-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #4f46e5;
+        }
+
+        /* metrics grid */
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .metric-card {
+            background: #f9fafb;
+            border-radius: 14px;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .metric-unit {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-left: 3px;
+        }
+
+        .metric-tag {
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .metric-tag.good {
+            color: #16a34a;
+        }
+
+        .metric-tag.bad {
+            color: var(--danger);
+        }
+
+        /* health bar */
+
+        .health-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: var(--accent-soft);
+        }
+
+        .health-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .health-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .health-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .health-badge {
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .health-bar {
+            flex: 0 0 40%;
+            height: 8px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .health-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #22c55e, #a3e635);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* mode + fan card */
+
+        .mode-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .mode-labels {
+            display: flex;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .mode-labels span {
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+        }
+
+        .mode-labels .active {
+            background: var(--accent-soft);
+            color: #047857;
+            border-color: #a7f3d0;
+            font-weight: 600;
+        }
+
+        .mode-labels .inactive {
+            color: var(--text-muted);
+            border-color: #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 46px;
+            height: 26px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-track {
+            position: absolute;
+            inset: 0;
+            border-radius: 999px;
+            background: #e5e7eb;
+            transition: background 0.25s;
+        }
+
+        .toggle-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            background: #ffffff;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.25);
+            transition: transform 0.25s;
+        }
+
+        .toggle input:checked + .toggle-track {
+            background: #22c55e33;
+        }
+
+        .toggle input:checked + .toggle-track .toggle-thumb {
+            transform: translateX(20px);
+        }
+
+        .fan-slider-row {
+            margin-top: 10px;
+        }
+
+        .fan-value-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .fan-value-main {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            background: var(--accent);
+            box-shadow: 0 2px 6px rgba(34, 197, 94, 0.6);
+            cursor: pointer;
+        }
+
+        input[type="range"]:disabled::-webkit-slider-thumb {
+            background: #a1a1aa;
+            box-shadow: none;
+        }
+
+        input[type="range"]:disabled {
+            background: #e5e7eb;
+        }
+
+        /* tasks placeholder */
+
+        .task-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .task-title {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .task-percent {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .task-bar {
+            height: 6px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .task-bar-fill {
+            height: 100%;
+            width: 40%;
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-top: 1px solid #f3f4f6;
+            font-size: 12px;
+        }
+
+        .task-item span {
+            color: var(--text-muted);
+        }
+
+        .task-status {
+            font-weight: 600;
+            color: #16a34a;
+        }
+
+        /* bottom info */
+
+        .footer-line {
+            margin-top: 4px;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .footer-line span {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<div class="screen">
+    <div class="top-bar">
+        <div class="top-left">
+            <div class="location-label">Seră</div>
+            <div class="location-name" id="loc-name">Automated Greenhouse</div>
+        </div>
+        <div class="top-right">
+            <div id="top-date">--</div>
+            <div id="top-time">--:--</div>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <span class="pill">
+            <span class="pill-dot"></span>
+            Live connected
+        </span>
+    </div>
+
+    <!-- MAIN ENV CARD -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div class="card-title">Overview</div>
+                <div class="card-subtitle">Seră interior</div>
+            </div>
+            <div class="chip">
+                <span class="chip-dot"></span>
+                <span id="mode-chip">AUTO</span>
+            </div>
+        </div>
+
+        <div class="temp-row">
+            <div class="temp-main" id="temp-main">--<span>°C</span></div>
+            <div class="temp-extra">
+                <span>Umiditate aer / sol</span>
+                <span id="humid-line">-- % / -- %</span>
+                <span id="light-line">Lumină: -- lx</span>
+            </div>
+        </div>
+
+        <div class="health-row">
+            <div class="health-left">
+                <div class="health-label">Stare generală cultură</div>
+                <div class="health-value" id="health-value">--%</div>
+                <div class="health-badge" id="health-badge">Calcul...</div>
+            </div>
+            <div class="health-bar">
+                <div class="health-bar-fill" id="health-bar-fill"></div>
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Temperatură</div>
+                <div class="metric-value">
+                    <span id="metric-temp">--</span>
+                    <span class="metric-unit">°C</span>
+                </div>
+                <div class="metric-tag" id="metric-temp-tag">--</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Lumină</div>
+                <div class="metric-value">
+                    <span id="metric-light">--</span>
+                    <span class="metric-unit">lx</span>
+                </div>
+                <div class="metric-tag" id="metric-light-tag">--</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Umiditate sol</div>
+                <div class="metric-value">
+                    <span id="metric-soil">--</span>
+                    <span class="metric-unit">%</span>
+                </div>
+                <div class="metric-tag" id="metric-soil-tag">--</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Nivel apă</div>
+                <div class="metric-value">
+                    <span id="metric-water">--</span>
+                    <span class="metric-unit">%</span>
+                </div>
+                <div class="metric-tag" id="metric-water-tag">--</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODE + FAN CARD -->
+    <div class="card">
+        <div class="mode-row">
+            <div class="mode-labels">
+                <span id="label-auto" class="active">Automat</span>
+                <span id="label-manual" class="inactive">Manual</span>
+            </div>
+            <div class="toggle-wrap">
+                <span style="font-size:12px;color:var(--text-muted);">Mod</span>
+                <label class="toggle">
+                    <input type="checkbox" id="mode-toggle">
+                    <div class="toggle-track">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="fan-slider-row">
+            <div class="fan-value-row">
+                <div>Ventilator</div>
+                <div class="fan-value-main" id="fan-value">0%</div>
+            </div>
+            <input type="range" id="fan-slider" min="0" max="100" value="0">
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+                În modul automat, viteza este controlată de senzorii de temperatură și umiditate.
+            </div>
+        </div>
+    </div>
+
+    <!-- TASKS PLACEHOLDER -->
+    <div class="card">
+        <div class="task-row">
+            <div class="task-title">Task-uri de azi</div>
+            <div class="task-percent">40% complet</div>
+        </div>
+        <div class="task-bar">
+            <div class="task-bar-fill"></div>
+        </div>
+
+        <div class="task-item">
+            <span>Udat ghivece</span>
+            <span class="task-status">În curs</span>
+        </div>
+        <div class="task-item">
+            <span>Verificat nivel apă</span>
+            <span>Planificat</span>
+        </div>
+        <div class="task-item">
+            <span>Verificat ventilator</span>
+            <span>Planificat</span>
+        </div>
+    </div>
+
+    <div class="footer-line">
+        IP dispozitiv: <span id="ip-label">--</span> · Ultima actualizare: <span id="last-update">--</span>
+    </div>
+</div>
+
+<script>
+    const modeToggle   = document.getElementById("mode-toggle");
+    const labelAuto    = document.getElementById("label-auto");
+    const labelManual  = document.getElementById("label-manual");
+    const fanSlider    = document.getElementById("fan-slider");
+    const fanValue     = document.getElementById("fan-value");
+
+    const tempMain     = document.getElementById("temp-main");
+    const humidLine    = document.getElementById("humid-line");
+    const lightLine    = document.getElementById("light-line");
+
+    const metricTemp   = document.getElementById("metric-temp");
+    const metricLight  = document.getElementById("metric-light");
+    const metricSoil   = document.getElementById("metric-soil");
+    const metricWater  = document.getElementById("metric-water");
+
+    const metricTempTag  = document.getElementById("metric-temp-tag");
+    const metricLightTag = document.getElementById("metric-light-tag");
+    const metricSoilTag  = document.getElementById("metric-soil-tag");
+    const metricWaterTag = document.getElementById("metric-water-tag");
+
+    const healthValue   = document.getElementById("health-value");
+    const healthBadge   = document.getElementById("health-badge");
+    const healthBarFill = document.getElementById("health-bar-fill");
+    const modeChip      = document.getElementById("mode-chip");
+
+    const ipLabel       = document.getElementById("ip-label");
+    const lastUpdate    = document.getElementById("last-update");
+    const topDate       = document.getElementById("top-date");
+    const topTime       = document.getElementById("top-time");
+
+    function updateClock() {
+        const d = new Date();
+        topDate.textContent = d.toLocaleDateString("ro-RO", { weekday:"short", day:"2-digit", month:"short", year:"numeric" });
+        topTime.textContent = d.toLocaleTimeString("ro-RO", { hour:"2-digit", minute:"2-digit" });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    async function sendFan(pct) {
+        try {
+            await fetch(`/api/fan?pct=${pct}`);
+        } catch(_) {}
+    }
+
+    async function sendMode(mode) {
+        try {
+            await fetch(`/api/set_mode?mode=${mode}`);
+        } catch(_) {}
+    }
+
+    modeToggle.addEventListener("change", () => {
+        const isManual = modeToggle.checked;
+        labelManual.className = isManual ? "active" : "inactive";
+        labelAuto.className   = isManual ? "inactive" : "active";
+        fanSlider.disabled    = !isManual;
+        modeChip.textContent  = isManual ? "MANUAL" : "AUTO";
+        sendMode(isManual ? "manual" : "auto");
+        if (isManual) sendFan(fanSlider.value);
+    });
+
+    fanSlider.addEventListener("input", () => {
+        fanValue.textContent = `${fanSlider.value}%`;
+    });
+
+    fanSlider.addEventListener("change", () => {
+        if (!modeToggle.checked) return;
+        sendFan(fanSlider.value);
+    });
+
+    function healthFromSensors(temp, soil, water) {
+        let score = 100;
+
+        if (temp < 18 || temp > 30) score -= 25;
+        if (soil < 30 || soil > 80) score -= 25;
+        if (water < 30 || water > 90) score -= 20;
+
+        score = Math.max(0, Math.min(100, score));
+        return score;
+    }
+
+    function labelForTemp(t) {
+        if (t >= 20 && t <= 28) return {txt:"Optimă pentru multe plante", cls:"good"};
+        if (t < 18)             return {txt:"Sub intervalul ideal", cls:"bad"};
+        return {txt:"Peste intervalul ideal", cls:"bad"};
+    }
+    function labelForSoil(s) {
+        if (s >= 40 && s <= 80) return {txt:"Umiditate bună", cls:"good"};
+        if (s < 40)             return {txt:"Sol uscat", cls:"bad"};
+        return {txt:"Sol prea umed", cls:"bad"};
+    }
+    function labelForWater(w) {
+        if (w >= 40 && w <= 90) return {txt:"Rezervor ok", cls:"good"};
+        if (w < 40)             return {txt:"Trebuie completat", cls:"bad"};
+        return {txt:"Aproape plin", cls:"good"};
+    }
+    function labelForLight(lx) {
+        if (lx < 200)          return {txt:"Lumină foarte scăzută", cls:"bad"};
+        if (lx < 800)          return {txt:"Lumină moderată", cls:"good"};
+        if (lx < 2000)         return {txt:"Lumină puternică", cls:"good"};
+        return {txt:"Lumină foarte puternică", cls:"bad"};
+    }
+
+    async function refreshStatus() {
+        try {
+            const r = await fetch("/api/status");
+            const data = await r.json();
+
+            const t = data.temp;
+            const light = data.light;
+            const soil  = data.soil;
+            const water = data.water;
+
+            tempMain.innerHTML = `${t.toFixed(1)}<span>°C</span>`;
+            humidLine.textContent = `-- % / ${soil.toFixed(0)} %`;
+            lightLine.textContent = `Lumină: ${light} lx`;
+
+            metricTemp.textContent  = t.toFixed(1);
+            metricLight.textContent = light;
+            metricSoil.textContent  = soil.toFixed(0);
+            metricWater.textContent = water.toFixed(0);
+
+            const lt = labelForTemp(t);
+            metricTempTag.textContent  = lt.txt;
+            metricTempTag.className    = "metric-tag " + lt.cls;
+
+            const ls = labelForSoil(soil);
+            metricSoilTag.textContent  = ls.txt;
+            metricSoilTag.className    = "metric-tag " + ls.cls;
+
+            const lw = labelForWater(water);
+            metricWaterTag.textContent = lw.txt;
+            metricWaterTag.className   = "metric-tag " + lw.cls;
+
+            const ll = labelForLight(light);
+            metricLightTag.textContent = ll.txt;
+            metricLightTag.className   = "metric-tag " + ll.cls;
+
+            const health = healthFromSensors(t, soil, water);
+            healthValue.textContent = `${health}%`;
+            healthBarFill.style.width = `${health}%`;
+            if (health >= 80) {
+                healthBadge.textContent = "Plantele arată foarte bine";
+            } else if (health >= 60) {
+                healthBadge.textContent = "Ok, dar verifică parametrii";
+            } else {
+                healthBadge.textContent = "Necesită atenție";
+            }
+
+            const isManual = data.mode === "manual";
+            modeToggle.checked = isManual;
+            labelManual.className = isManual ? "active" : "inactive";
+            labelAuto.className   = isManual ? "inactive" : "active";
+            fanSlider.disabled    = !isManual;
+            modeChip.textContent  = isManual ? "MANUAL" : "AUTO";
+
+            fanSlider.value = data.fan_pct;
+            fanValue.textContent = `${data.fan_pct}%`;
+
+            if (data.ip) ipLabel.textContent = data.ip;
+            const now = new Date();
+            lastUpdate.textContent = now.toLocaleTimeString("ro-RO", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+        } catch (e) {
+            tempMain.innerHTML = `--<span>°C</span>`;
+        }
+    }
+
+    setInterval(refreshStatus, 2500);
+    refreshStatus();
+</script>
+</body>
+</html>
