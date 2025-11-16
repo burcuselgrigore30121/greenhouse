@@ -467,11 +467,13 @@
 
 <script>
     // MQTT configuration (HiveMQ Cloud)
-    const MQTT_HOST = "8eb117e59198434aa177d111ac506e97.s1.eu.hivemq.cloud";
-    const MQTT_PORT = 8884; // WebSocket secure port
-    const MQTT_USER = "greenhouse";
-    const MQTT_PASS = "Esp-32greenhouse";
-    const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8);
+   // --------- 2. MQTT CONFIG ---------
+const MQTT_HOST = "broker.emqx.io";
+const MQTT_PORT = 8084; // WebSocket secure (WSS)
+const MQTT_USER = "";
+const MQTT_PASS = "";
+const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8);
+
 
     const TOPIC_CMD_FAN       = "sera/comenzi/ventilator";
     const TOPIC_CMD_MODE      = "sera/comenzi/mod";
@@ -506,7 +508,8 @@
         statusText: document.getElementById("status-text")
     };
 
-    const client = new Paho.MQTT.Client(MQTT_HOST, Number(MQTT_PORT), MQTT_CLIENT_ID);
+   const client = new Paho.MQTT.Client(MQTT_HOST, Number(MQTT_PORT), MQTT_CLIENT_ID);
+
     client.onConnectionLost = onConnectionLost;
     client.onMessageArrived = onMessageArrived;
 
@@ -622,20 +625,21 @@
     }
 
     function startConnect() {
-        allElements.statusText.textContent = "Connecting...";
-        allElements.statusPill.classList.add("disconnected");
-        client.connect({
-            onSuccess: onConnect,
-            useSSL: true,
-            userName: MQTT_USER,
-            password: MQTT_PASS,
-            onFailure: (err) => {
-                console.error("Connection failed:", err.errorMessage);
-                allElements.statusText.textContent = "Error";
-                setTimeout(startConnect, 5000);
-            }
-        });
-    }
+    allElements.statusText.textContent = "Connecting...";
+    allElements.statusPill.classList.add("disconnected");
+    client.connect({
+        onSuccess: onConnect,
+        useSSL: true,        // pentru 8084
+        userName: MQTT_USER,
+        password: MQTT_PASS,
+        onFailure: (err) => {
+            console.error("Connection failed:", err.errorMessage);
+            allElements.statusText.textContent = "Error";
+            setTimeout(startConnect, 5000);
+        }
+    });
+}
+
 
     function publishMessage(topic, payload) {
         if (!client.isConnected()) {
@@ -694,3 +698,4 @@
 </script>
 </body>
 </html>
+
