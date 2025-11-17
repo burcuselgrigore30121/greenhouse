@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Greenhouse</title>
 
-    <!-- TAB ICON (put your PNG next to this HTML; keep the same filename) -->
+    <!-- LOGO IN TAB -->
     <link rel="icon" type="image/png" href="green-house-logo.png">
     <link rel="apple-touch-icon" href="green-house-logo.png">
-    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#00b074">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
@@ -34,7 +33,7 @@
 
         * { box-sizing: border-box; }
 
-        /* LIVE BACKGROUND (animated gradient with site colors) */
+        /* LIVE BACKGROUND */
         body {
             margin: 0;
             padding: 24px;
@@ -46,7 +45,6 @@
             background-size: 220% 220%;
             animation: greenhouseGradient 26s ease-in-out infinite alternate;
         }
-
         @keyframes greenhouseGradient {
             0%   { background-position: 0% 0%;     }
             25%  { background-position: 50% 0%;    }
@@ -59,20 +57,58 @@
             max-width: 480px;
             margin: 0 auto;
         }
-
         @media (min-width: 900px) {
             .screen { max-width: 1200px; }
             body    { padding: 40px; }
-
-            .card-title { font-size: 16px !important; }
-            .metric-value { font-size: 22px !important; }
-            .metric-label { font-size: 14px !important; }
-            .temp-main { font-size: 56px; }
-            .fan-value-main { font-size: 30px; }
-            input[type="range"]::-webkit-slider-thumb { width: 26px; height: 26px; }
-            .mode-labels span { padding: 8px 16px; font-size: 14px; }
         }
 
+        /* SPLASH */
+        #splash {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 20% 0%, #e0ffe8 0, #b8ffd0 40%, #00b074 85%, #064e3b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        #splash.hide {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-16px);
+        }
+        .splash-inner {
+            text-align: center;
+            color: #022c22;
+        }
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 32px;
+            background: rgba(255,255,255,0.94);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+            box-shadow: 0 26px 60px rgba(15,23,42,0.45);
+        }
+        .splash-logo img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+        .splash-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .splash-sub {
+            font-size: 15px;
+            opacity: 0.85;
+        }
+
+        /* TOP BAR */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -84,8 +120,6 @@
             align-items: center;
             gap: 14px;
         }
-
-        /* LOGO BOX */
         .top-logo {
             width: 52px;
             height: 52px;
@@ -102,12 +136,7 @@
             height: 100%;
             object-fit: contain;
         }
-
-        .top-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
+        .top-text { display: flex; flex-direction: column; gap: 2px; }
         .location-label {
             font-size: 13px;
             text-transform: uppercase;
@@ -336,21 +365,7 @@
             background: #f9fafb;
         }
 
-        .fan-slider-row { margin-top: 12px; }
-        .fan-value-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-        .fan-value-main {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--accent-deep);
-        }
-
+        /* RANGE SLIDERS – BAR UMPLUTĂ PÂNĂ LA CERC */
         input[type="range"] {
             width: 100%;
             -webkit-appearance: none;
@@ -369,12 +384,125 @@
             box-shadow: 0 2px 6px rgba(34, 197, 94, 0.7);
             cursor: pointer;
         }
-        input[type="range"]:disabled::-webkit-slider-thumb {
+        input[type="range"]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            background: var(--accent);
+            border: none;
+            cursor: pointer;
+        }
+        input[type="range"]:disabled::-webkit-slider-thumb,
+        input[type="range"]:disabled::-moz-range-thumb {
             background: #a1a1aa;
             box-shadow: none;
         }
         input[type="range"]:disabled {
             background: #e5e7eb;
+        }
+
+        .fan-slider-row { margin-top: 12px; }
+        .fan-value-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .fan-value-main {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-deep);
+        }
+
+        /* DEVICE CARDS */
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .device-card {
+            border-radius: 16px;
+            padding: 10px 12px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+        .device-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .device-main {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .device-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* TOGGLE */
+        .toggle {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            cursor: pointer;
+            font-size: 11px;
+            color: var(--text-muted);
+            user-select: none;
+        }
+        .toggle-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+        .toggle.on {
+            background: #dcfce7;
+            border-color: #a7f3d0;
+            color: #166534;
+        }
+        .toggle.on .toggle-thumb {
+            background: #22c55e;
+            transform: translateX(2px);
+        }
+
+        .device-controls.disabled {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        .color-row input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            padding: 0;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(15,23,42,0.2);
+        }
+        .color-row input[type="color"]::-webkit-color-swatch,
+        .color-row input[type="color"]::-moz-color-swatch {
+            border: none;
+            border-radius: 999px;
         }
 
         .footer-line {
@@ -386,11 +514,21 @@
     </style>
 </head>
 <body>
+<!-- SPLASH ECRAN -->
+<div id="splash">
+    <div class="splash-inner">
+        <div class="splash-logo">
+            <img src="green-house-logo.png" alt="Green House">
+        </div>
+        <div class="splash-title">Hi, welcome 👋</div>
+        <div class="splash-sub">You are entering your automated greenhouse</div>
+    </div>
+</div>
+
 <div class="screen">
     <div class="top-bar">
         <div class="top-left">
             <div class="top-logo">
-                <!-- put /mnt/data/—Pngtree—green house logo_6962806.png as green-house-logo.png next to this HTML -->
                 <img src="green-house-logo.png" alt="Green House Logo">
             </div>
             <div class="top-text">
@@ -411,6 +549,7 @@
         </span>
     </div>
 
+    <!-- OVERVIEW -->
     <div class="card">
         <div class="card-header">
             <div>
@@ -476,6 +615,7 @@
         </div>
     </div>
 
+    <!-- MODE + MANUAL CONTROLS -->
     <div class="card">
         <div class="mode-row">
             <div class="mode-labels">
@@ -483,9 +623,11 @@
                 <span id="label-manual" class="inactive">Manual</span>
             </div>
             <div style="font-size:12px;color:var(--text-muted);">
-                Fan mode
+                Control mode
             </div>
         </div>
+
+        <!-- VENTILATOR -->
         <div class="fan-slider-row">
             <div class="fan-value-row">
                 <div>Fan speed</div>
@@ -496,6 +638,72 @@
                 In auto mode, fan speed is controlled by the sensors.
             </div>
         </div>
+
+        <!-- DEVICE GRID (LAMP, PUMP, HEAT) -->
+        <div id="device-controls" class="device-controls disabled">
+            <div class="device-grid" style="margin-top:16px;">
+                <!-- LAMP -->
+                <div class="device-card">
+                    <div class="device-title">Lamp</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <div class="device-main" id="lamp-main">Off</div>
+                        <div class="device-sub">
+                            <button type="button" class="toggle" id="lamp-toggle">
+                                <div class="toggle-thumb"></div>
+                                <span id="lamp-toggle-label">Off</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="fan-value-row" style="margin-bottom:4px;">
+                        <div>Intensity</div>
+                        <div class="fan-value-main" id="lamp-value" style="font-size:14px;">0%</div>
+                    </div>
+                    <input type="range" id="lamp-slider" min="0" max="100" value="0">
+                    <div class="color-row">
+                        <span>Color</span>
+                        <input type="color" id="lamp-color" value="#a3e635">
+                    </div>
+                </div>
+
+                <!-- PUMP -->
+                <div class="device-card">
+                    <div class="device-title">Water pump</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <div class="device-main" id="pump-main">Off</div>
+                        <div class="device-sub">
+                            <button type="button" class="toggle" id="pump-toggle">
+                                <div class="toggle-thumb"></div>
+                                <span id="pump-toggle-label">Off</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="fan-value-row" style="margin-bottom:4px;">
+                        <div>Flow</div>
+                        <div class="fan-value-main" id="pump-value" style="font-size:14px;">0%</div>
+                    </div>
+                    <input type="range" id="pump-slider" min="0" max="100" value="0">
+                </div>
+
+                <!-- HEAT -->
+                <div class="device-card">
+                    <div class="device-title">Heat</div>
+                    <div class="fan-value-row" style="margin-bottom:4px;">
+                        <div>Intensity</div>
+                        <div class="fan-value-main" id="heat-value" style="font-size:14px;">0%</div>
+                    </div>
+                    <input type="range" id="heat-slider" min="0" max="100" value="0">
+                    <div class="device-sub" style="margin-top:6px;">
+                        Controlled only in manual mode.
+                    </div>
+                </div>
+
+                <!-- RESERVED / EMPTY SLOT -->
+                <div class="device-card">
+                    <div class="device-title">Extra</div>
+                    <div class="device-main" style="font-size:14px;">Reserved for future device</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="footer-line">
@@ -504,19 +712,27 @@
 </div>
 
 <script>
-    // MQTT configuration (HiveMQ Cloud)
+    // MQTT CONFIG
     const MQTT_HOST = "broker.emqx.io";
-    const MQTT_PORT = 8084; // WebSocket secure (WSS)
+    const MQTT_PORT = 8084;
     const MQTT_USER = "";
     const MQTT_PASS = "";
     const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8);
 
-    const TOPIC_CMD_FAN       = "sera/comenzi/ventilator";
-    const TOPIC_CMD_MODE      = "sera/comenzi/mod";
-    const TOPIC_STAT_SENZORI  = "sera/stare/senzori";
+    const TOPIC_CMD_FAN        = "sera/comenzi/ventilator";
+    const TOPIC_CMD_MODE       = "sera/comenzi/mod";
+    const TOPIC_STAT_SENZORI   = "sera/stare/senzori";
+
+    const TOPIC_CMD_LAMP_POWER  = "sera/comenzi/lampa/power";
+    const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/bright";
+    const TOPIC_CMD_LAMP_COLOR  = "sera/comenzi/lampa/color";
+
+    const TOPIC_CMD_PUMP_POWER  = "sera/comenzi/pompa/power";
+    const TOPIC_CMD_PUMP_SPEED  = "sera/comenzi/pompa/speed";
+
+    const TOPIC_CMD_HEAT_LEVEL  = "sera/comenzi/incalzire/level";
 
     const allElements = {
-        modeToggle: null,
         labelAuto: document.getElementById("label-auto"),
         labelManual: document.getElementById("label-manual"),
         fanSlider: document.getElementById("fan-slider"),
@@ -541,16 +757,43 @@
         topDate: document.getElementById("top-date"),
         topTime: document.getElementById("top-time"),
         statusPill: document.getElementById("status-pill"),
-        statusText: document.getElementById("status-text")
+        statusText: document.getElementById("status-text"),
+        deviceControls: document.getElementById("device-controls"),
+
+        lampToggle: document.getElementById("lamp-toggle"),
+        lampToggleLabel: document.getElementById("lamp-toggle-label"),
+        lampMain: document.getElementById("lamp-main"),
+        lampSlider: document.getElementById("lamp-slider"),
+        lampValue: document.getElementById("lamp-value"),
+        lampColor: document.getElementById("lamp-color"),
+
+        pumpToggle: document.getElementById("pump-toggle"),
+        pumpToggleLabel: document.getElementById("pump-toggle-label"),
+        pumpMain: document.getElementById("pump-main"),
+        pumpSlider: document.getElementById("pump-slider"),
+        pumpValue: document.getElementById("pump-value"),
+
+        heatSlider: document.getElementById("heat-slider"),
+        heatValue: document.getElementById("heat-value"),
+
+        splash: document.getElementById("splash")
     };
 
     const client = new Paho.MQTT.Client(MQTT_HOST, Number(MQTT_PORT), MQTT_CLIENT_ID);
-
     client.onConnectionLost = onConnectionLost;
     client.onMessageArrived = onMessageArrived;
 
+    function hideSplash() {
+        if (!allElements.splash.classList.contains("hide")) {
+            allElements.splash.classList.add("hide");
+        }
+    }
+
+    window.addEventListener("load", () => {
+        setTimeout(hideSplash, 1200);
+    });
+
     function onConnect() {
-        console.log("Connected to HiveMQ");
         client.subscribe(TOPIC_STAT_SENZORI);
         allElements.statusText.textContent = "Live connected";
         allElements.statusPill.classList.remove("disconnected");
@@ -558,7 +801,6 @@
 
     function onConnectionLost(responseObject) {
         if (responseObject.errorCode !== 0) {
-            console.log("Connection lost: " + responseObject.errorMessage);
             allElements.statusText.textContent = "Disconnected";
             allElements.statusPill.classList.add("disconnected");
             setTimeout(startConnect, 3000);
@@ -602,6 +844,13 @@
         if (water < 30 || water > 90) score -= 20;
         score = Math.max(0, Math.min(100, score));
         return score;
+    }
+
+    function updateSliderFill(slider) {
+        const min = slider.min ? Number(slider.min) : 0;
+        const max = slider.max ? Number(slider.max) : 100;
+        const val = ((Number(slider.value) - min) * 100) / (max - min);
+        slider.style.background = `linear-gradient(90deg, #00b074 0%, #00b074 ${val}%, #e5e7eb ${val}%, #e5e7eb 100%)`;
     }
 
     function onMessageArrived(message) {
@@ -649,12 +898,15 @@
             if (document.activeElement !== allElements.fanSlider) {
                 allElements.fanSlider.value = data.fan_pct;
                 allElements.fanValue.textContent = `${data.fan_pct}%`;
+                updateSliderFill(allElements.fanSlider);
             }
 
             if (data.ip) allElements.ipLabel.textContent = data.ip;
             const now = new Date();
             allElements.lastUpdate.textContent =
                 now.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+
+            hideSplash();
         } catch (e) {
             console.error("JSON parse error:", e);
         }
@@ -669,7 +921,6 @@
             userName: MQTT_USER,
             password: MQTT_PASS,
             onFailure: (err) => {
-                console.error("Connection failed:", err.errorMessage);
                 allElements.statusText.textContent = "Error";
                 setTimeout(startConnect, 5000);
             }
@@ -677,10 +928,7 @@
     }
 
     function publishMessage(topic, payload) {
-        if (!client.isConnected()) {
-            console.warn("Disconnected. Message not sent.");
-            return;
-        }
+        if (!client.isConnected()) return;
         const message = new Paho.MQTT.Message(payload.toString());
         message.destinationName = topic;
         client.send(message);
@@ -692,12 +940,15 @@
             allElements.labelAuto.className   = "inactive";
             allElements.fanSlider.disabled    = false;
             allElements.modeChip.textContent  = "MANUAL";
+            allElements.deviceControls.classList.remove("disabled");
         } else {
             allElements.labelManual.className = "inactive";
             allElements.labelAuto.className   = "active";
             allElements.fanSlider.disabled    = true;
             allElements.modeChip.textContent  = "AUTO";
+            allElements.deviceControls.classList.add("disabled");
         }
+        updateSliderFill(allElements.fanSlider);
 
         if (publish) {
             publishMessage(TOPIC_CMD_MODE, isManual ? "manual" : "auto");
@@ -707,6 +958,7 @@
         }
     }
 
+    // EVENTS
     allElements.labelAuto.addEventListener("click", () => {
         setModeUI(false, true);
     });
@@ -716,11 +968,60 @@
 
     allElements.fanSlider.addEventListener("input", () => {
         allElements.fanValue.textContent = `${allElements.fanSlider.value}%`;
+        updateSliderFill(allElements.fanSlider);
     });
     allElements.fanSlider.addEventListener("change", () => {
         publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
     });
 
+    // LAMP
+    allElements.lampToggle.addEventListener("click", () => {
+        const isOn = !allElements.lampToggle.classList.contains("on");
+        allElements.lampToggle.classList.toggle("on", isOn);
+        const label = isOn ? "On" : "Off";
+        allElements.lampToggleLabel.textContent = label;
+        allElements.lampMain.textContent = label;
+        publishMessage(TOPIC_CMD_LAMP_POWER, isOn ? "on" : "off");
+    });
+    allElements.lampSlider.addEventListener("input", () => {
+        allElements.lampValue.textContent = `${allElements.lampSlider.value}%`;
+        updateSliderFill(allElements.lampSlider);
+    });
+    allElements.lampSlider.addEventListener("change", () => {
+        publishMessage(TOPIC_CMD_LAMP_BRIGHT, allElements.lampSlider.value);
+    });
+    allElements.lampColor.addEventListener("change", () => {
+        publishMessage(TOPIC_CMD_LAMP_COLOR, allElements.lampColor.value);
+    });
+
+    // PUMP
+    allElements.pumpToggle.addEventListener("click", () => {
+        const isOn = !allElements.pumpToggle.classList.contains("on");
+        allElements.pumpToggle.classList.toggle("on", isOn);
+        const label = isOn ? "On" : "Off";
+        allElements.pumpToggleLabel.textContent = label;
+        allElements.pumpMain.textContent = label;
+        publishMessage(TOPIC_CMD_PUMP_POWER, isOn ? "on" : "off");
+    });
+    allElements.pumpSlider.addEventListener("input", () => {
+        allElements.pumpValue.textContent = `${allElements.pumpSlider.value}%`;
+        updateSliderFill(allElements.pumpSlider);
+    });
+    allElements.pumpSlider.addEventListener("change", () => {
+        publishMessage(TOPIC_CMD_PUMP_SPEED, allElements.pumpSlider.value);
+    });
+
+    // HEAT
+    allElements.heatSlider.addEventListener("input", () => {
+        allElements.heatValue.textContent = `${allElements.heatSlider.value}%`;
+        updateSliderFill(allElements.heatSlider);
+    });
+    allElements.heatSlider.addEventListener("change", () => {
+        publishMessage(TOPIC_CMD_HEAT_LEVEL, allElements.heatSlider.value);
+    });
+
+    // INIT
+    [allElements.fanSlider, allElements.lampSlider, allElements.pumpSlider, allElements.heatSlider].forEach(updateSliderFill);
     setInterval(updateClock, 1000);
     updateClock();
     startConnect();
