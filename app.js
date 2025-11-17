@@ -153,6 +153,28 @@ function healthFromSensors(temp, soil, water) {
 // =====================
 // SLIDER FILL
 // =====================
+// =====================
+// COLOR HELPERS
+// =====================
+function hexToRgb(hex) {
+    if (!hex) return null;
+    let h = hex.trim();
+
+    // acceptă "#a855f7" sau "a855f7" sau "#abc"
+    if (h.startsWith("#")) h = h.slice(1);
+    if (h.length === 3) {
+        h = h.split("").map(c => c + c).join("");
+    }
+    if (h.length !== 6) return null;
+
+    const num = parseInt(h, 16);
+    return {
+        r: (num >> 16) & 255,
+        g: (num >> 8) & 255,
+        b: num & 255
+    };
+}
+
 function updateSliderFill(slider, colorOverride) {
     if (!slider) return;
     const min = slider.min ? Number(slider.min) : 0;
@@ -327,10 +349,22 @@ function refreshLampCardBackground() {
         allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
         return;
     }
+
+    const rgb = hexToRgb(currentLampColor);
+    if (!rgb) {
+        // fallback dacă data-color e alt format (rgb(...), etc.)
+        allElements.lampCard.style.background =
+            "radial-gradient(circle at 0% 0%, rgba(168,85,247,0.25), #f9fafb 55%, #f9fafb 100%)";
+        allElements.lampCard.style.boxShadow =
+            "0 18px 38px rgba(148,163,253,0.55)";
+        return;
+    }
+
     const r = v / 100;
-    const alpha = 0.18 + 0.40 * r;
+    const alpha = 0.18 + 0.40 * r; // intensitate în funcție de slider
+
     allElements.lampCard.style.background =
-        `radial-gradient(circle at 0% 0%, ${currentLampColor + Math.floor(alpha*255).toString(16).padStart(2,"0")}, #f9fafb 55%, #f9fafb 100%)`;
+        `radial-gradient(circle at 0% 0%, rgba(${rgb.r},${rgb.g},${rgb.b},${alpha}), #f9fafb 55%, #f9fafb 100%)`;
     allElements.lampCard.style.boxShadow =
         "0 18px 38px rgba(148,163,253,0.55)";
 }
