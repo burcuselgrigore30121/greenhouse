@@ -21,6 +21,7 @@ const TOPIC_CMD_HEAT_LEVEL  = "sera/comenzi/incalzire/level";
 let isManualMode = false;
 let currentLampColor = "#a855f7";
 
+// ELEMENTE DOM
 const allElements = {
     btnAuto: document.getElementById("btn-auto"),
     btnManual: document.getElementById("btn-manual"),
@@ -71,20 +72,26 @@ const allElements = {
     heatSlider: document.getElementById("heat-slider"),
     heatValue: document.getElementById("heat-value"),
     heatCard: document.getElementById("heat-card"),
+
     overviewCard: document.getElementById("overview-card")
 };
 
+// MQTT CLIENT
 const client = new Paho.MQTT.Client(MQTT_HOST, Number(MQTT_PORT), MQTT_CLIENT_ID);
 client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = onMessageArrived;
 
+// SPLASH
 function hideSplash() {
-    allElements.splash.classList.add("hide");
+    if (allElements.splash) {
+        allElements.splash.classList.add("hide");
+    }
 }
 window.addEventListener("load", () => {
     setTimeout(hideSplash, 1500);
 });
 
+// CONECTARE MQTT
 function onConnect() {
     client.subscribe(TOPIC_STAT_SENZORI);
     allElements.statusText.textContent = "Live connected";
@@ -99,6 +106,29 @@ function onConnectionLost(res) {
     }
 }
 
+function startConnect() {
+    allElements.statusText.textContent = "Connecting...";
+    allElements.statusPill.classList.add("disconnected");
+    client.connect({
+        onSuccess: onConnect,
+        useSSL: true,
+        userName: MQTT_USER,
+        password: MQTT_PASS,
+        onFailure: () => {
+            allElements.statusText.textContent = "Error";
+            setTimeout(startConnect, 5000);
+        }
+    });
+}
+
+function publishMessage(topic, payload) {
+    if (!client.isConnected()) return;
+    const m = new Paho.MQTT.Message(payload.toString());
+    m.destinationName = topic;
+    client.send(m);
+}
+
+// CLOCK
 function updateClock() {
     const d = new Date();
     allElements.topDate.textContent = d.toLocaleDateString("en-GB", {
@@ -109,6 +139,7 @@ function updateClock() {
     });
 }
 
+// LABELS + HEALTH
 function labelForTemp(t) {
     if (t >= 20 && t <= 28) return {txt:"Optimal", cls:"good"};
     if (t < 18) return {txt:"Too cold", cls:"bad"};
@@ -134,11 +165,12 @@ function healthFromSensors(temp, soil, water) {
     if (temp < 18 || temp > 30) score -= 25;
     if (soil < 30 || soil > 80) score -= 25;
     if (water < 30 || water > 90) score -= 20;
-    score = Math.max(0, Math.min(100, score));
-    return score;
+    return Math.max(0, Math.min(100, score));
 }
 
+// SLIDER FILL
 function updateSliderFill(slider, colorOverride) {
+    if (!slider) return;
     const min = slider.min ? Number(slider.min) : 0;
     const max = slider.max ? Number(slider.max) : 100;
     const val = ((Number(slider.value) - min) * 100) / (max - min);
@@ -147,6 +179,91 @@ function updateSliderFill(slider, colorOverride) {
         `linear-gradient(90deg, ${c} 0%, ${c} ${val}%, #e5e7eb ${val}%, #e5e7eb 100%)`;
 }
 
+// FAN VISUAL
+function updateFanVisual() {
+    const val = Number(allElements.fanSlider.value);
+    if (isManualMode && val > 0) {
+        allElements.fanVisual.classList.add("spin");
+    } else {
+        allElements.fanVisual.classList.remove("spin");
+    }
+}
+
+// RESET MANUAL CONTROLS
+function resetManualControls() {
+    // FAN
+    allElements.fanSlider.value = 0;
+    allElements.fanValue.textContent = "0%";
+    updateSliderFill(allElements.fanSlider);
+    updateFanVisual();
+
+    // LAMP
+    allElements.lampToggle.classList.remove("on");
+    allElements.lampToggleLabel.textContent = "Off";
+    allElements.lampMain.textContent = "Off";
+    allElements.lampSlider.value = 0;
+    allElements.lampValue.textContent = "0%";
+    currentLampColor = "#a855f7"; // mov default
+    updateSliderFill(allElements.lampSlider, currentLampColor);
+    allElements.lampDots.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.color === currentLampColor);
+    });
+    allElements.lampCard.style.background = "#f9fafb";
+    allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
+
+    // PUMP
+    allElements.pumpToggle.classList.remove("on");
+    allElements.pumpToggleLabel.textContent = "Off";
+    allElements.pumpMain.textContent = "Off";
+    allElements.pumpSlider.value = 0;
+    allElements.pumpValue.textContent = "0%";
+    updateSliderFill(allElements.pumpSlider, "#3b82f6");
+    allElements.pumpCard.style.setProperty("--pump-level", "0%");
+
+    // HEAT
+    allElements.heatSlider.value = 0;
+    allElements.heatValue.textContent = "0%";
+    allElements.heatSlider.dispatchEvent(new Event("input"));
+}
+
+// MOD AUTO / MANUAL
+function setModeUI(manual, publish) {
+    isManualMode = manual;
+
+    if (manual) {
+        // MANUAL
+        allElements.btnManual.classList.add("active");
+        allElements.btnAuto.classList.remove("active");
+        allElements.modeChip.textContent = "MANUAL";
+        allElements.controlsCard.classList.remove("hidden");
+    } else {
+        // AUTO
+        allElements.btnManual.classList.remove("active");
+        allElements.btnAuto.classList.add("active");
+        allElements.modeChip.textContent = "AUTO";
+        allElements.controlsCard.classList.add("hidden");
+
+        // reset manual când ieși din el
+        resetManualControls();
+    }
+
+    // overview: gradient + layout diferit doar în manual
+    if (allElements.overviewCard) {
+        allElements.overviewCard.classList.toggle("manual-mode", manual);
+    }
+
+    updateSliderFill(allElements.fanSlider);
+    updateFanVisual();
+
+    if (publish) {
+        publishMessage(TOPIC_CMD_MODE, manual ? "manual" : "auto");
+        if (manual) {
+            publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
+        }
+    }
+}
+
+// MESAJ MQTT PRIMIT
 function onMessageArrived(message) {
     try {
         const data = JSON.parse(message.payloadString);
@@ -187,10 +304,13 @@ function onMessageArrived(message) {
         else if (health >= 60) allElements.healthBadge.textContent = "OK";
         else allElements.healthBadge.textContent = "Attention";
 
+        // modul venit din device
         const manualFromDevice = data.mode === "manual";
         setModeUI(manualFromDevice, false);
 
-        if (typeof data.fan_pct === "number" && document.activeElement !== allElements.fanSlider) {
+        // fan din device (dacă e trimis)
+        if (typeof data.fan_pct === "number" &&
+            document.activeElement !== allElements.fanSlider) {
             allElements.fanSlider.value = data.fan_pct;
             allElements.fanValue.textContent = `${data.fan_pct}%`;
             updateSliderFill(allElements.fanSlider);
@@ -208,144 +328,12 @@ function onMessageArrived(message) {
     }
 }
 
-function startConnect() {
-    allElements.statusText.textContent = "Connecting...";
-    allElements.statusPill.classList.add("disconnected");
-    client.connect({
-        onSuccess: onConnect,
-        useSSL: true,
-        userName: MQTT_USER,
-        password: MQTT_PASS,
-        onFailure: () => {
-            allElements.statusText.textContent = "Error";
-            setTimeout(startConnect, 5000);
-        }
-    });
-}
-
-function publishMessage(topic, payload) {
-    if (!client.isConnected()) return;
-    const m = new Paho.MQTT.Message(payload.toString());
-    m.destinationName = topic;
-    client.send(m);
-}
-
-function setModeUI(manual, publish) {
-    isManualMode = manual;
-
-    if (manual) {
-        // MANUAL ON
-        allElements.btnManual.classList.add("active");
-        allElements.btnAuto.classList.remove("active");
-        allElements.modeChip.textContent = "MANUAL";
-        allElements.controlsCard.classList.remove("hidden");
-
-        // overview gradient ON
-        allElements.overviewCard.classList.add("manual-mode");
-
-    } else {
-        // AUTO ON
-        allElements.btnManual.classList.remove("active");
-        allElements.btnAuto.classList.add("active");
-        allElements.modeChip.textContent = "AUTO";
-        allElements.controlsCard.classList.add("hidden");
-
-        // overview OFF
-        allElements.overviewCard.classList.remove("manual-mode");
-
-        // reset tot manual control
-        resetManualControls();
-
-        // reset coolSlider dacă există
-        if (allElements.coolSlider) {
-            allElements.coolSlider.value = 0;
-            allElements.coolValue.textContent = "0%";
-            updateSliderFill(allElements.coolSlider);
-        }
-    }
-
-    // slider + fan vizual
-    updateSliderFill(allElements.fanSlider);
-    updateFanVisual();
-
-    // publish MQTT
-    if (publish) {
-        publishMessage(TOPIC_CMD_MODE, manual ? "manual" : "auto");
-        if (manual) {
-            publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
-        }
-    }
-}
-
-
-
-    // schimbă și tabul principal (pentru gradientul animat)
-    if (allElements.overviewCard) {
-        allElements.overviewCard.classList.toggle("manual-mode", manual);
-    }
-
-    updateSliderFill(allElements.fanSlider);
-    updateFanVisual();
-
-    if (publish) {
-        publishMessage(TOPIC_CMD_MODE, manual ? "manual" : "auto");
-        if (manual) {
-            publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
-        }
-    }
-}
-
-  
-
-// FAN
-function updateFanVisual() {
-    const val = Number(allElements.fanSlider.value);
-    if (isManualMode && val > 0) {
-        allElements.fanVisual.classList.add("spin");
-    } else {
-        allElements.fanVisual.classList.remove("spin");
-    }
-}
-function resetManualControls() {
-    // FAN
-    allElements.fanSlider.value = 0;
-    allElements.fanValue.textContent = "0%";
-    updateSliderFill(allElements.fanSlider);
-    updateFanVisual();
-
-    // LAMP
-    allElements.lampToggle.classList.remove("on");
-    allElements.lampToggleLabel.textContent = "Off";
-    allElements.lampMain.textContent = "Off";
-    allElements.lampSlider.value = 0;
-    allElements.lampValue.textContent = "0%";
-    currentLampColor = "#a855f7"; // mov default
-    updateSliderFill(allElements.lampSlider, currentLampColor);
-    allElements.lampDots.forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.color === currentLampColor);
-    });
-    allElements.lampCard.style.background = "#f9fafb";
-    allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
-
-    // PUMP
-    allElements.pumpToggle.classList.remove("on");
-    allElements.pumpToggleLabel.textContent = "Off";
-    allElements.pumpMain.textContent = "Off";
-    allElements.pumpSlider.value = 0;
-    allElements.pumpValue.textContent = "0%";
-    updateSliderFill(allElements.pumpSlider, "#3b82f6");
-    allElements.pumpCard.style.setProperty("--pump-level", "0%");
-
-    // HEAT
-    allElements.heatSlider.value = 0;
-    allElements.heatValue.textContent = "0%";
-    // refolosesc handler-ul de input ca să refacă background-ul normal
-    allElements.heatSlider.dispatchEvent(new Event("input"));
-}
-
+// EVENT LISTENERS
+// butoane AUTO / MANUAL
 allElements.btnAuto.addEventListener("click", () => setModeUI(false, true));
 allElements.btnManual.addEventListener("click", () => setModeUI(true, true));
 
+// FAN
 allElements.fanSlider.addEventListener("input", () => {
     allElements.fanValue.textContent = `${allElements.fanSlider.value}%`;
     updateSliderFill(allElements.fanSlider);
@@ -436,8 +424,12 @@ allElements.heatSlider.addEventListener("change", () => {
 });
 
 // INIT
-[allElements.fanSlider, allElements.lampSlider,
- allElements.pumpSlider, allElements.heatSlider].forEach(s => updateSliderFill(s));
+[
+    allElements.fanSlider,
+    allElements.lampSlider,
+    allElements.pumpSlider,
+    allElements.heatSlider
+].forEach(s => updateSliderFill(s));
 
 setInterval(updateClock, 1000);
 updateClock();
