@@ -231,25 +231,23 @@ function setModeUI(manual, publish) {
     isManualMode = manual;
 
     if (manual) {
-        // MANUAL
         allElements.btnManual.classList.add("active");
         allElements.btnAuto.classList.remove("active");
         allElements.modeChip.textContent = "MANUAL";
         allElements.controlsCard.classList.remove("hidden");
+
+        allElements.overviewCard.classList.add("manual-mode");
+        allElements.controlsCard.classList.add("manual-mode");
     } else {
-        // AUTO
         allElements.btnManual.classList.remove("active");
         allElements.btnAuto.classList.add("active");
         allElements.modeChip.textContent = "AUTO";
         allElements.controlsCard.classList.add("hidden");
 
-        // reset manual când ieși din el
-        resetManualControls();
-    }
+        allElements.overviewCard.classList.remove("manual-mode");
+        allElements.controlsCard.classList.remove("manual-mode");
 
-    // overview: gradient + layout diferit doar în manual
-    if (allElements.overviewCard) {
-        allElements.overviewCard.classList.toggle("manual-mode", manual);
+        resetManualControls();
     }
 
     updateSliderFill(allElements.fanSlider);
@@ -262,6 +260,7 @@ function setModeUI(manual, publish) {
         }
     }
 }
+
 
 // MESAJ MQTT PRIMIT
 function onMessageArrived(message) {
