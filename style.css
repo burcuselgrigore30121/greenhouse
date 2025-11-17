@@ -932,3 +932,17 @@ input[type="range"]:disabled {
     content: none !important;
 }
 
+/* === Cardurile mici din controls: fundal alb simplu === */
+.device-card {
+    background: #ffffff !important;
+    backdrop-filter: blur(0px) !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.10) !important;
+    border-radius: 16px !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Eliminam orice glow sau gradient mostenit */
+.device-card::before {
+    content: none !important;
+}
