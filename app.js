@@ -1,4 +1,6 @@
-// =============== MQTT CONFIG =================
+// =====================
+// MQTT CONFIG
+// =====================
 const MQTT_HOST = "broker.emqx.io";
 const MQTT_PORT = 8084;
 const MQTT_USER = "";
@@ -18,23 +20,23 @@ const TOPIC_CMD_PUMP_SPEED  = "sera/comenzi/pompa/speed";
 
 const TOPIC_CMD_HEAT_LEVEL  = "sera/comenzi/incalzire/level";
 
-// =============== STATE =================
 let isManualMode = false;
-// la început NU avem culoare pentru lampă
-let currentLampColor = null;
+let currentLampColor = "#a855f7"; // mov default
 
-// =============== DOM REFERENCES =================
+// =====================
+// DOM ELEMENTS
+// =====================
 const allElements = {
-    // mod auto / manual
+    // mod auto/manual
     btnAuto: document.getElementById("btn-auto"),
     btnManual: document.getElementById("btn-manual"),
+
     controlsCard: document.getElementById("controls-card"),
 
     // fan
     fanSlider: document.getElementById("fan-slider"),
     fanValue: document.getElementById("fan-value"),
     fanVisual: document.getElementById("fan-visual"),
-    fanBlades: document.getElementById("fan-blades"),
 
     // overview
     tempMain: document.getElementById("temp-main"),
@@ -84,13 +86,16 @@ const allElements = {
     heatCard: document.getElementById("heat-card")
 };
 
-// =============== MQTT CLIENT =================
+// =====================
+// MQTT CLIENT
+// =====================
 const client = new Paho.MQTT.Client(MQTT_HOST, Number(MQTT_PORT), MQTT_CLIENT_ID);
-
 client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = onMessageArrived;
 
-// Splash hi/bye
+// =====================
+// SPLASH
+// =====================
 function hideSplash() {
     if (allElements.splash) {
         allElements.splash.classList.add("hide");
@@ -100,12 +105,71 @@ window.addEventListener("load", () => {
     setTimeout(hideSplash, 1500);
 });
 
-// MQTT connect
+// =====================
+// CLOCK
+// =====================
+function updateClock() {
+    const d = new Date();
+    allElements.topDate.textContent = d.toLocaleDateString("en-GB", {
+        weekday:"short", day:"2-digit", month:"short", year:"numeric"
+    });
+    allElements.topTime.textContent = d.toLocaleTimeString("en-GB", {
+        hour:"2-digit", minute:"2-digit"
+    });
+}
+
+// =====================
+// LABEL HELPERS
+// =====================
+function labelForTemp(t) {
+    if (t >= 20 && t <= 28) return {txt:"Optimal", cls:"good"};
+    if (t < 18) return {txt:"Too cold", cls:"bad"};
+    return {txt:"Too hot", cls:"bad"};
+}
+function labelForSoil(s) {
+    if (s >= 40 && s <= 80) return {txt:"Moist", cls:"good"};
+    if (s < 40) return {txt:"Dry", cls:"bad"};
+    return {txt:"Too wet", cls:"bad"};
+}
+function labelForWater(w) {
+    if (w >= 40 && w <= 90) return {txt:"OK", cls:"good"};
+    if (w < 40) return {txt:"Low", cls:"bad"};
+    return {txt:"OK", cls:"good"};
+}
+function labelForLight(lx) {
+    if (lx < 200) return {txt:"Low", cls:"bad"};
+    if (lx < 800) return {txt:"Medium", cls:"good"};
+    return {txt:"High", cls:"good"};
+}
+function healthFromSensors(temp, soil, water) {
+    let score = 100;
+    if (temp < 18 || temp > 30) score -= 25;
+    if (soil < 30 || soil > 80) score -= 25;
+    if (water < 30 || water > 90) score -= 20;
+    score = Math.max(0, Math.min(100, score));
+    return score;
+}
+
+// =====================
+// SLIDER FILL
+// =====================
+function updateSliderFill(slider, colorOverride) {
+    if (!slider) return;
+    const min = slider.min ? Number(slider.min) : 0;
+    const max = slider.max ? Number(slider.max) : 100;
+    const val = ((Number(slider.value) - min) * 100) / (max - min);
+    const c = colorOverride || "var(--accent)";
+    slider.style.background =
+        `linear-gradient(90deg, ${c} 0%, ${c} ${val}%, #e5e7eb ${val}%, #e5e7eb 100%)`;
+}
+
+// =====================
+// MQTT CALLBACKS
+// =====================
 function onConnect() {
     client.subscribe(TOPIC_STAT_SENZORI);
     allElements.statusText.textContent = "Live connected";
     allElements.statusPill.classList.remove("disconnected");
-    hideSplash();
 }
 
 function onConnectionLost(res) {
@@ -116,6 +180,72 @@ function onConnectionLost(res) {
     }
 }
 
+function onMessageArrived(message) {
+    try {
+        const data = JSON.parse(message.payloadString);
+
+        const t = data.temp;
+        const light = data.light;
+        const soil = data.soil;
+        const water = data.water;
+
+        allElements.tempMain.innerHTML = `${t.toFixed(1)}<span>°C</span>`;
+        allElements.humidLine.textContent = `-- % / ${soil.toFixed(0)} %`;
+        allElements.lightLine.textContent = `Light: ${light} lx`;
+        allElements.metricTemp.textContent  = t.toFixed(1);
+        allElements.metricLight.textContent = light;
+        allElements.metricSoil.textContent  = soil.toFixed(0);
+        allElements.metricWater.textContent = water.toFixed(0);
+
+        const lt = labelForTemp(t);
+        allElements.metricTempTag.textContent  = lt.txt;
+        allElements.metricTempTag.className    = "metric-tag " + lt.cls;
+
+        const ls = labelForSoil(soil);
+        allElements.metricSoilTag.textContent  = ls.txt;
+        allElements.metricSoilTag.className    = "metric-tag " + ls.cls;
+
+        const lw = labelForWater(water);
+        allElements.metricWaterTag.textContent = lw.txt;
+        allElements.metricWaterTag.className   = "metric-tag " + lw.cls;
+
+        const ll = labelForLight(light);
+        allElements.metricLightTag.textContent = ll.txt;
+        allElements.metricLightTag.className   = "metric-tag " + ll.cls;
+
+        const health = healthFromSensors(t, soil, water);
+        allElements.healthValue.textContent = `${health}%`;
+        allElements.healthBarFill.style.width = `${health}%`;
+        if (health >= 80) allElements.healthBadge.textContent = "Very good";
+        else if (health >= 60) allElements.healthBadge.textContent = "OK";
+        else allElements.healthBadge.textContent = "Attention";
+
+        const manualFromDevice = data.mode === "manual";
+        setModeUI(manualFromDevice, false);
+
+        if (typeof data.fan_pct === "number" &&
+            document.activeElement !== allElements.fanSlider) {
+
+            allElements.fanSlider.value = data.fan_pct;
+            allElements.fanValue.textContent = `${data.fan_pct}%`;
+            updateSliderFill(allElements.fanSlider);
+            updateFanVisual();
+        }
+
+        if (data.ip) allElements.ipLabel.textContent = data.ip;
+        const now = new Date();
+        allElements.lastUpdate.textContent =
+            now.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+
+        hideSplash();
+    } catch (e) {
+        console.error("JSON parse error:", e);
+    }
+}
+
+// =====================
+// MQTT CONNECT
+// =====================
 function startConnect() {
     allElements.statusText.textContent = "Connecting...";
     allElements.statusPill.classList.add("disconnected");
@@ -131,56 +261,6 @@ function startConnect() {
     });
 }
 
-// =============== UTIL FUNCTIONS =================
-function updateClock() {
-    const d = new Date();
-    allElements.topDate.textContent = d.toLocaleDateString("en-GB", {
-        weekday: "short", day: "2-digit", month: "short", year: "numeric"
-    });
-    allElements.topTime.textContent = d.toLocaleTimeString("en-GB", {
-        hour: "2-digit", minute: "2-digit"
-    });
-}
-
-function labelForTemp(t) {
-    if (t >= 20 && t <= 28) return { txt: "Optimal", cls: "good" };
-    if (t < 18) return { txt: "Too cold", cls: "bad" };
-    return { txt: "Too hot", cls: "bad" };
-}
-function labelForSoil(s) {
-    if (s >= 40 && s <= 80) return { txt: "Moist", cls: "good" };
-    if (s < 40) return { txt: "Dry", cls: "bad" };
-    return { txt: "Too wet", cls: "bad" };
-}
-function labelForWater(w) {
-    if (w >= 40 && w <= 90) return { txt: "OK", cls: "good" };
-    if (w < 40) return { txt: "Low", cls: "bad" };
-    return { txt: "OK", cls: "good" };
-}
-function labelForLight(lx) {
-    if (lx < 200) return { txt: "Low", cls: "bad" };
-    if (lx < 800) return { txt: "Medium", cls: "good" };
-    return { txt: "High", cls: "good" };
-}
-function healthFromSensors(temp, soil, water) {
-    let score = 100;
-    if (temp < 18 || temp > 30) score -= 25;
-    if (soil < 30 || soil > 80) score -= 25;
-    if (water < 30 || water > 90) score -= 20;
-    score = Math.max(0, Math.min(100, score));
-    return score;
-}
-
-function updateSliderFill(slider, colorOverride) {
-    if (!slider) return;
-    const min = slider.min ? Number(slider.min) : 0;
-    const max = slider.max ? Number(slider.max) : 100;
-    const val = ((Number(slider.value) - min) * 100) / (max - min);
-    const c = colorOverride || "var(--accent)";
-    slider.style.background =
-        `linear-gradient(90deg, ${c} 0%, ${c} ${val}%, #e5e7eb ${val}%, #e5e7eb 100%)`;
-}
-
 function publishMessage(topic, payload) {
     if (!client.isConnected()) return;
     const m = new Paho.MQTT.Message(payload.toString());
@@ -188,72 +268,9 @@ function publishMessage(topic, payload) {
     client.send(m);
 }
 
-// =============== HANDLE SENSOR DATA =================
-function onMessageArrived(message) {
-    try {
-        const data = JSON.parse(message.payloadString);
-
-        const t = data.temp;
-        const light = data.light;
-        const soil = data.soil;
-        const water = data.water;
-
-        allElements.tempMain.innerHTML = `${t.toFixed(1)}<span>°C</span>`;
-        allElements.humidLine.textContent = `-- % / ${soil.toFixed(0)} %`;
-        allElements.lightLine.textContent = `Light: ${light} lx`;
-        allElements.metricTemp.textContent = t.toFixed(1);
-        allElements.metricLight.textContent = light;
-        allElements.metricSoil.textContent = soil.toFixed(0);
-        allElements.metricWater.textContent = water.toFixed(0);
-
-        const lt = labelForTemp(t);
-        allElements.metricTempTag.textContent = lt.txt;
-        allElements.metricTempTag.className = "metric-tag " + lt.cls;
-
-        const ls = labelForSoil(soil);
-        allElements.metricSoilTag.textContent = ls.txt;
-        allElements.metricSoilTag.className = "metric-tag " + ls.cls;
-
-        const lw = labelForWater(water);
-        allElements.metricWaterTag.textContent = lw.txt;
-        allElements.metricWaterTag.className = "metric-tag " + lw.cls;
-
-        const ll = labelForLight(light);
-        allElements.metricLightTag.textContent = ll.txt;
-        allElements.metricLightTag.className = "metric-tag " + ll.cls;
-
-        const health = healthFromSensors(t, soil, water);
-        allElements.healthValue.textContent = `${health}%`;
-        allElements.healthBarFill.style.width = `${health}%`;
-        if (health >= 80) allElements.healthBadge.textContent = "Very good";
-        else if (health >= 60) allElements.healthBadge.textContent = "OK";
-        else allElements.healthBadge.textContent = "Attention";
-
-        // mod trimis de device
-        const manualFromDevice = data.mode === "manual";
-        setModeUI(manualFromDevice, false);
-
-        // fan procent de la device (dacă trimite)
-        if (typeof data.fan_pct === "number" &&
-            document.activeElement !== allElements.fanSlider) {
-            allElements.fanSlider.value = data.fan_pct;
-            allElements.fanValue.textContent = `${data.fan_pct}%`;
-            updateSliderFill(allElements.fanSlider);
-            updateFanVisual();
-        }
-
-        if (data.ip) allElements.ipLabel.textContent = data.ip;
-        const now = new Date();
-        allElements.lastUpdate.textContent =
-            now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-
-        hideSplash();
-    } catch (e) {
-        console.error("JSON parse error:", e);
-    }
-}
-
-// =============== MODE AUTO / MANUAL =================
+// =====================
+// MODE AUTO / MANUAL
+// =====================
 function setModeUI(manual, publish) {
     isManualMode = manual;
 
@@ -269,18 +286,8 @@ function setModeUI(manual, publish) {
         allElements.modeChip.textContent = "AUTO";
         allElements.controlsCard.classList.add("hidden");
         allElements.overviewCard.classList.remove("manual-mode");
-
         resetManualControls();
     }
-     function hexToRgba(hex, alpha) {
-    if (!hex) return `rgba(0,0,0,${alpha})`;
-    const h = hex.replace("#", "");
-    const bigint = parseInt(h, 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return `rgba(${r},${g},${b},${alpha})`;
-}
 
     updateSliderFill(allElements.fanSlider);
     updateFanVisual();
@@ -293,22 +300,44 @@ function setModeUI(manual, publish) {
     }
 }
 
-// =============== FAN =================
+// =====================
+// FAN
+// =====================
 function updateFanVisual() {
-    const v = Number(allElements.fanSlider.value);
-    if (isManualMode && v > 0) {
+    const val = Number(allElements.fanSlider.value);
+    if (isManualMode && val > 0) {
         allElements.fanVisual.classList.add("spin");
-        const min = 0.18, max = 1.0;
-        const dur = max - (max - min) * (v / 100);
-        allElements.fanVisual.style.setProperty("--fan-speed", `${dur.toFixed(2)}s`);
+        // viteza de rotație: mai mare val -> mai rapid
+        const base = 1.0;      // secunde
+        const min = 0.25;
+        const speed = Math.max(min, base - 0.75 * (val / 100));
+        allElements.fanVisual.style.setProperty("--fan-speed", `${speed}s`);
     } else {
         allElements.fanVisual.classList.remove("spin");
-        allElements.fanVisual.style.removeProperty("--fan-speed");
     }
 }
 
+// =====================
+// LAMP UI HELPER
+// =====================
+function refreshLampCardBackground() {
+    const v = Number(allElements.lampSlider.value);
+    if (v === 0) {
+        allElements.lampCard.style.background = "#f9fafb";
+        allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
+        return;
+    }
+    const r = v / 100;
+    const alpha = 0.18 + 0.40 * r;
+    allElements.lampCard.style.background =
+        `radial-gradient(circle at 0% 0%, ${currentLampColor + Math.floor(alpha*255).toString(16).padStart(2,"0")}, #f9fafb 55%, #f9fafb 100%)`;
+    allElements.lampCard.style.boxShadow =
+        "0 18px 38px rgba(148,163,253,0.55)";
+}
 
-// reset complet la ieșirea din manual
+// =====================
+// RESET MANUAL CONTROLS
+// =====================
 function resetManualControls() {
     // FAN
     allElements.fanSlider.value = 0;
@@ -322,10 +351,10 @@ function resetManualControls() {
     allElements.lampMain.textContent = "Off";
     allElements.lampSlider.value = 0;
     allElements.lampValue.textContent = "0%";
-    currentLampColor = null;
-    updateSliderFill(allElements.lampSlider);
+    currentLampColor = "#a855f7";
+    updateSliderFill(allElements.lampSlider, currentLampColor);
     allElements.lampDots.forEach(btn => btn.classList.remove("active"));
-    allElements.lampCard.style.background = "#ffffff";
+    allElements.lampCard.style.background = "#f9fafb";
     allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
 
     // PUMP
@@ -340,18 +369,20 @@ function resetManualControls() {
     // HEAT
     allElements.heatSlider.value = 0;
     allElements.heatValue.textContent = "0%";
-    allElements.heatCard.style.background = "#ffffff";
+    allElements.heatCard.style.background = "#f9fafb";
     allElements.heatCard.style.borderColor = "#e5e7eb";
     allElements.heatCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
 }
 
-// =============== EVENT LISTENERS =================
+// =====================
+// EVENT LISTENERS
+// =====================
 
-// butoane Auto / Manual de sus
+// butoane mod
 allElements.btnAuto.addEventListener("click", () => setModeUI(false, true));
 allElements.btnManual.addEventListener("click", () => setModeUI(true, true));
 
-// FAN slider
+// fan
 allElements.fanSlider.addEventListener("input", () => {
     allElements.fanValue.textContent = `${allElements.fanSlider.value}%`;
     updateSliderFill(allElements.fanSlider);
@@ -361,7 +392,7 @@ allElements.fanSlider.addEventListener("change", () => {
     if (isManualMode) publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
 });
 
-// LAMP toggle
+// lamp toggle
 allElements.lampToggle.addEventListener("click", () => {
     const on = !allElements.lampToggle.classList.contains("on");
     allElements.lampToggle.classList.toggle("on", on);
@@ -369,55 +400,31 @@ allElements.lampToggle.addEventListener("click", () => {
     allElements.lampToggleLabel.textContent = label;
     allElements.lampMain.textContent = label;
     publishMessage(TOPIC_CMD_LAMP_POWER, on ? "on" : "off");
-    allElements.lampCard.style.boxShadow = on
-        ? "0 18px 38px rgba(148,163,253,0.55)"
-        : "0 10px 24px rgba(15,23,42,0.14)";
 });
 
-// LAMP slider – intensitate + culoare mai puternică
+// lamp slider
 allElements.lampSlider.addEventListener("input", () => {
-    const v = Number(allElements.lampSlider.value);
-    allElements.lampValue.textContent = `${v}%`;
-
-    if (currentLampColor) {
-        updateSliderFill(allElements.lampSlider, currentLampColor);
-
-        if (v === 0) {
-            allElements.lampCard.style.background = "#ffffff";
-        } else {
-            const alpha = 0.12 + 0.25 * (v / 100);
-            allElements.lampCard.style.background =
-                `radial-gradient(circle at 0% 0%, ${hexToRgba(currentLampColor, alpha)}, #f9fafb 55%, #ffffff 100%)`;
-        }
-    } else {
-        updateSliderFill(allElements.lampSlider); // verde default
-        allElements.lampCard.style.background = "#ffffff";
-    }
-})
+    allElements.lampValue.textContent = `${allElements.lampSlider.value}%`;
+    updateSliderFill(allElements.lampSlider, currentLampColor);
+    refreshLampCardBackground();
+});
 allElements.lampSlider.addEventListener("change", () => {
     publishMessage(TOPIC_CMD_LAMP_BRIGHT, allElements.lampSlider.value);
 });
 
-// LAMP colors
+// lamp colors
 allElements.lampDots.forEach(btn => {
     btn.addEventListener("click", () => {
         allElements.lampDots.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         currentLampColor = btn.dataset.color;
-
         updateSliderFill(allElements.lampSlider, currentLampColor);
-
-        const v = Number(allElements.lampSlider.value);
-        if (v > 0) {
-            const alpha = 0.12 + 0.25 * (v / 100);
-            allElements.lampCard.style.background =
-                `radial-gradient(circle at 0% 0%, ${hexToRgba(currentLampColor, alpha)}, #f9fafb 55%, #ffffff 100%)`;
-        }
+        refreshLampCardBackground();
         publishMessage(TOPIC_CMD_LAMP_COLOR, currentLampColor);
     });
 });
 
-// PUMP + flow
+// pump toggle
 allElements.pumpToggle.addEventListener("click", () => {
     const on = !allElements.pumpToggle.classList.contains("on");
     allElements.pumpToggle.classList.toggle("on", on);
@@ -426,6 +433,8 @@ allElements.pumpToggle.addEventListener("click", () => {
     allElements.pumpMain.textContent = label;
     publishMessage(TOPIC_CMD_PUMP_POWER, on ? "on" : "off");
 });
+
+// pump slider
 allElements.pumpSlider.addEventListener("input", () => {
     const v = Number(allElements.pumpSlider.value);
     allElements.pumpValue.textContent = `${v}%`;
@@ -436,7 +445,7 @@ allElements.pumpSlider.addEventListener("change", () => {
     publishMessage(TOPIC_CMD_PUMP_SPEED, allElements.pumpSlider.value);
 });
 
-// HEAT – portocaliu progresiv
+// heat slider
 allElements.heatSlider.addEventListener("input", () => {
     const v = Number(allElements.heatSlider.value);
     allElements.heatValue.textContent = `${v}%`;
@@ -458,15 +467,19 @@ allElements.heatSlider.addEventListener("input", () => {
         `radial-gradient(circle at 0% 0%, rgba(249,115,22,${alpha}), #fefce8 50%, #f9fafb 100%)`;
     allElements.heatCard.style.borderColor = `rgba(248,171,89,${borderAlpha})`;
     allElements.heatCard.style.boxShadow =
-        `0 ${shadow}px ${shadow * 2}px rgba(248,171,89,0.6)`;
+        `0 ${shadow}px ${shadow*2}px rgba(248,171,89,0.6)`;
 });
 allElements.heatSlider.addEventListener("change", () => {
     publishMessage(TOPIC_CMD_HEAT_LEVEL, allElements.heatSlider.value);
 });
 
-// =============== INIT =================
+// =====================
+// INIT
+// =====================
 [allElements.fanSlider, allElements.lampSlider,
- allElements.pumpSlider, allElements.heatSlider].forEach(s => updateSliderFill(s));
+ allElements.pumpSlider, allElements.heatSlider].forEach(s => {
+    if (s) updateSliderFill(s);
+});
 
 setInterval(updateClock, 1000);
 updateClock();
