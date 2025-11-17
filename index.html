@@ -13,7 +13,7 @@
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- MQTT client TREBUIE ÎNAINTE de app.js -->
+    <!-- MQTT client ÎNAINTE de app.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
     <!-- JS aplicație -->
@@ -32,7 +32,7 @@
 </div>
 
 <div class="screen">
-    <!-- TAB PRINCIPAL (INFO) -->
+    <!-- TOP -->
     <div class="top-bar">
         <div class="top-left">
             <div class="top-logo">
@@ -56,17 +56,28 @@
         </span>
     </div>
 
+    <!-- CARD PRINCIPAL: OVERVIEW + CONTROALE MANUAL -->
     <div class="card" id="overview-card">
+
         <div class="card-header">
             <div>
                 <div class="card-title">Overview</div>
                 <div class="card-subtitle">Indoor greenhouse</div>
             </div>
-            <div class="chip">
-                <span class="chip-dot"></span>
-                <span id="mode-chip">--</span>
+
+            <!-- Dreapta: Auto / Manual + chip -->
+            <div class="card-header-right">
+                <div class="mode-buttons">
+                    <button id="btn-auto" class="mode-btn active">Auto</button>
+                    <button id="btn-manual" class="mode-btn">Manual</button>
+                </div>
+                <div class="chip">
+                    <span class="chip-dot"></span>
+                    <span id="mode-chip">AUTO</span>
+                </div>
             </div>
         </div>
+
         <div class="temp-row">
             <div class="temp-main" id="temp-main">--<span>°C</span></div>
             <div class="temp-extra">
@@ -75,6 +86,7 @@
                 <span id="light-line">Light: -- lx</span>
             </div>
         </div>
+
         <div class="health-row">
             <div class="health-left">
                 <div class="health-label">Overall crop health</div>
@@ -85,6 +97,7 @@
                 <div class="health-bar-fill" id="health-bar-fill"></div>
             </div>
         </div>
+
         <div class="metrics-grid">
             <div class="metric-card">
                 <div class="metric-label">Temperature</div>
@@ -119,105 +132,99 @@
                 <div class="metric-tag" id="metric-water-tag">--</div>
             </div>
         </div>
-    </div>
 
-    <!-- BARA AUTO / MANUAL SUB TAB PRINCIPAL -->
-    <div class="mode-bar">
-        <div class="mode-buttons">
-            <button id="btn-auto" class="mode-btn active">Auto</button>
-            <button id="btn-manual" class="mode-btn">Manual</button>
-        </div>
-        <div class="mode-hint">
-            Auto uses sensor rules; Manual lets you override devices.
-        </div>
-    </div>
+        <!-- SECȚIUNE CONTROALE MANUAL, ÎNĂUNTRUL ACELEIAȘI CARD -->
+        <div id="controls-card" class="controls-section hidden">
+            <!-- separator fin -->
+            <div class="controls-separator"></div>
 
-    <!-- TAB 2: CONTROALE (vizibil doar în MANUAL) -->
-    <div class="card hidden" id="controls-card">
-        <!-- FAN -->
-        <div id="fan-card">
-            <div class="fan-top-row">
-                <div>
-                    <div class="fan-title">Fan</div>
-                    <div class="fan-sub">Cooling & airflow</div>
+            <!-- FAN -->
+            <div id="fan-card">
+                <div class="fan-top-row">
+                    <div>
+                        <div class="fan-title">Fan</div>
+                        <div class="fan-sub">Cooling & airflow</div>
+                    </div>
+                    <div class="fan-visual" id="fan-visual">
+                        <div class="fan-blades"></div>
+                    </div>
                 </div>
-                <div class="fan-visual" id="fan-visual">
-                    <div class="fan-blades"></div>
+                <div class="fan-slider-row">
+                    <div class="fan-value-row">
+                        <div>Fan speed</div>
+                        <div class="fan-value-main" id="fan-value">0%</div>
+                    </div>
+                    <input type="range" id="fan-slider" min="0" max="100" value="0">
                 </div>
             </div>
-            <div class="fan-slider-row">
-                <div class="fan-value-row">
-                    <div>Fan speed</div>
-                    <div class="fan-value-main" id="fan-value">0%</div>
-                </div>
-                <input type="range" id="fan-slider" min="0" max="100" value="0">
-            </div>
-        </div>
 
-        <!-- GRID MANUAL DEVICES -->
-        <div id="device-controls">
-            <div class="device-grid">
-                <!-- LAMP -->
-                <div class="device-card" id="lamp-card">
-                    <div class="device-title">Lamp</div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                        <div class="device-main" id="lamp-main">Off</div>
-                        <button type="button" class="toggle" id="lamp-toggle">
-                            <div class="toggle-thumb"></div>
-                            <span id="lamp-toggle-label">Off</span>
-                        </button>
+            <!-- GRID MANUAL DEVICES -->
+            <div id="device-controls">
+                <div class="device-grid">
+                    <!-- LAMP -->
+                    <div class="device-card" id="lamp-card">
+                        <div class="device-title">Lamp</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <div class="device-main" id="lamp-main">Off</div>
+                            <button type="button" class="toggle" id="lamp-toggle">
+                                <div class="toggle-thumb"></div>
+                                <span id="lamp-toggle-label">Off</span>
+                            </button>
+                        </div>
+                        <div class="fan-value-row" style="margin-bottom:4px;">
+                            <div>Intensity</div>
+                            <div class="fan-value-main" id="lamp-value" style="font-size:15px;">0%</div>
+                        </div>
+                        <input type="range" id="lamp-slider" min="0" max="100" value="0">
+                        <div class="lamp-colors">
+                            <span>Color</span>
+                            <button type="button" class="lamp-dot active" data-color="#a855f7" style="background:#a855f7;"></button>
+                            <button type="button" class="lamp-dot" data-color="#3b82f6" style="background:#3b82f6;"></button>
+                            <button type="button" class="lamp-dot" data-color="#ef4444" style="background:#ef4444;"></button>
+                        </div>
                     </div>
-                    <div class="fan-value-row" style="margin-bottom:4px;">
-                        <div>Intensity</div>
-                        <div class="fan-value-main" id="lamp-value" style="font-size:15px;">0%</div>
-                    </div>
-                    <input type="range" id="lamp-slider" min="0" max="100" value="0">
-                    <div class="lamp-colors">
-                        <span>Color</span>
-                        <button type="button" class="lamp-dot active" data-color="#a855f7" style="background:#a855f7;"></button>
-                        <button type="button" class="lamp-dot" data-color="#3b82f6" style="background:#3b82f6;"></button>
-                        <button type="button" class="lamp-dot" data-color="#ef4444" style="background:#ef4444;"></button>
-                    </div>
-                </div>
 
-                <!-- WATER PUMP -->
-                <div class="device-card" id="pump-card">
-                    <div class="device-title">Water pump</div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;position:relative;z-index:1;">
-                        <div class="device-main" id="pump-main">Off</div>
-                        <button type="button" class="toggle" id="pump-toggle">
-                            <div class="toggle-thumb"></div>
-                            <span id="pump-toggle-label">Off</span>
-                        </button>
+                    <!-- WATER PUMP -->
+                    <div class="device-card" id="pump-card">
+                        <div class="device-title">Water pump</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;position:relative;z-index:1;">
+                            <div class="device-main" id="pump-main">Off</div>
+                            <button type="button" class="toggle" id="pump-toggle">
+                                <div class="toggle-thumb"></div>
+                                <span id="pump-toggle-label">Off</span>
+                            </button>
+                        </div>
+                        <div class="fan-value-row" style="margin-bottom:4px;position:relative;z-index:1;">
+                            <div>Flow</div>
+                            <div class="fan-value-main" id="pump-value" style="font-size:15px;">0%</div>
+                        </div>
+                        <input type="range" id="pump-slider" min="0" max="100" value="0" style="position:relative;z-index:1;">
                     </div>
-                    <div class="fan-value-row" style="margin-bottom:4px;position:relative;z-index:1;">
-                        <div>Flow</div>
-                        <div class="fan-value-main" id="pump-value" style="font-size:15px;">0%</div>
-                    </div>
-                    <input type="range" id="pump-slider" min="0" max="100" value="0" style="position:relative;z-index:1;">
-                </div>
 
-                <!-- HEAT -->
-                <div class="device-card" id="heat-card">
-                    <div class="device-title">Heat</div>
-                    <div class="fan-value-row" style="margin-bottom:4px;">
-                        <div>Intensity</div>
-                        <div class="fan-value-main" id="heat-value" style="font-size:15px;">0%</div>
+                    <!-- HEAT -->
+                    <div class="device-card" id="heat-card">
+                        <div class="device-title">Heat</div>
+                        <div class="fan-value-row" style="margin-bottom:4px;">
+                            <div>Intensity</div>
+                            <div class="fan-value-main" id="heat-value" style="font-size:15px;">0%</div>
+                        </div>
+                        <input type="range" id="heat-slider" min="0" max="100" value="0">
+                        <div class="device-sub" style="margin-top:6px;">
+                            Higher values generate more heat.
+                        </div>
                     </div>
-                    <input type="range" id="heat-slider" min="0" max="100" value="0">
-                    <div class="device-sub" style="margin-top:6px;">
-                        Higher values generate more heat.
-                    </div>
-                </div>
 
-                <!-- EXTRA -->
-                <div class="device-card">
-                    <div class="device-title">Extra</div>
-                    <div class="device-main" style="font-size:15px;">Reserved for future module</div>
+                    <!-- EXTRA -->
+                    <div class="device-card">
+                        <div class="device-title">Extra</div>
+                        <div class="device-main" style="font-size:15px;">Reserved for future module</div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        <!-- end controls-section -->
+
+    </div> <!-- end overview-card -->
 
     <div class="footer-line">
         Device IP: <span id="ip-label">--</span> · Last update: <span id="last-update">--</span>
