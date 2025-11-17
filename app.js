@@ -234,19 +234,48 @@ function setModeUI(manual, publish) {
     isManualMode = manual;
 
     if (manual) {
+        // ACTIVEZI MODUL MANUAL
         allElements.btnManual.classList.add("active");
         allElements.btnAuto.classList.remove("active");
         allElements.modeChip.textContent = "MANUAL";
         allElements.controlsCard.classList.remove("hidden");
+
+        // activezi UI manual pentru overview
+        allElements.overviewCard.classList.add("manual-mode");
+
     } else {
+        // REVII PE AUTO
         allElements.btnManual.classList.remove("active");
         allElements.btnAuto.classList.add("active");
         allElements.modeChip.textContent = "AUTO";
         allElements.controlsCard.classList.add("hidden");
 
-        // când părăsești modul Manual → resetezi controalele
+        // oprești gradientul manual din overview
+        allElements.overviewCard.classList.remove("manual-mode");
+
+        // === RESETARE COMPLETĂ MANUAL MODE ===
         resetManualControls();
+
+        // === RESETARE FAN COOLING dacă există ===
+        if (allElements.coolSlider) {
+            allElements.coolSlider.value = 0;
+            allElements.coolValue.textContent = "0%";
+            updateSliderFill(allElements.coolSlider);
+        }
     }
+
+    // actualizări generale
+    updateSliderFill(allElements.fanSlider);
+    updateFanVisual();
+
+    if (publish) {
+        publishMessage(TOPIC_CMD_MODE, manual ? "manual" : "auto");
+        if (manual) {
+            publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
+        }
+    }
+}
+
 
     // schimbă și tabul principal (pentru gradientul animat)
     if (allElements.overviewCard) {
