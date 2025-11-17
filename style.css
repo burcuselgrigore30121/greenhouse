@@ -276,13 +276,7 @@ body {
 }
 
 .chip {
-    display: none;
-}
-.chip-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 999px;
-    background: #4f46e5;
+    display: none !important;
 }
 
 .metrics-grid {
@@ -660,106 +654,97 @@ input[type="range"]:disabled {
 
 /* --- MANUAL MODE: smooth multi-color animated gradient pentru OVERVIEW --- */
 /* cardul de overview are poziție relativă ca să putem desena glow-ul pe margini */
-#overview-card {
-    position: relative;
-    overflow: hidden;
-}
-
-/* Bază: și în Auto are un glow foarte fin pe margini */
-#overview-card::before {
-    content: "";
-    position: absolute;
-    inset: -20px;
-    pointer-events: none;
-    z-index: -1;
-    background:
-        radial-gradient(circle at 0% 0%,
-            rgba(34,197,94,0.16),
-            rgba(255,255,255,0) 60%)
-        ,
-        radial-gradient(circle at 100% 0%,
-            rgba(56,189,248,0.14),
-            rgba(255,255,255,0) 60%)
-        ,
-        radial-gradient(circle at 50% 100%,
-            rgba(250,204,21,0.12),
-            rgba(255,255,255,0) 55%);
-    filter: blur(18px);
-}
-
-/* MANUAL: întărim doar glow-ul, fundalul rămâne alb */
-#overview-card.manual-mode {
-    background: rgba(255,255,255,0.97);
-    border-color: rgba(248,171,89,0.55);
-    box-shadow:
-        0 40px 80px rgba(0,0,0,0.20),
-        inset 0 0 30px rgba(255,255,255,0.25);
-}
-
-/* în Manual mode schimbăm nuanțele de pe margini, dar centrul rămâne curat */
-#overview-card.manual-mode::before {
-    content: "";
-    position: absolute;
-    inset: -24px;
-    pointer-events: none;
-    z-index: -1;
-    background:
-        radial-gradient(circle at 0% 0%,
-            rgba(249,115,22,0.30),
-            rgba(255,255,255,0) 60%)
-        ,
-        radial-gradient(circle at 100% 0%,
-            rgba(59,130,246,0.28),
-            rgba(255,255,255,0) 60%)
-        ,
-        radial-gradient(circle at 50% 100%,
-            rgba(52,211,153,0.26),
-            rgba(255,255,255,0) 55%);
-    filter: blur(26px);
-}
-
-/* doar un mic indicator text, fără alt efect */
-#overview-card.manual-mode .card-title::after {
-    content: " · MANUAL MODE";
-    color: #15803d;
-    font-weight: 600;
-}
-
-
-/* animația pentru overview manual */
-@keyframes overviewSmooth {
-    0%   { background-position:   0% 50%; }
-    25%  { background-position: 100% 50%; }
-    50%  { background-position: 200% 50%; }
-    75%  { background-position: 300% 50%; }
-    100% { background-position:   0% 50%; }
-}
-/* === GLOW DOAR PE CARDURILE MARI === */
-
+/* CARDURI MARI: OVERVIEW + CONTROLS */
 #overview-card,
 #controls-card {
     position: relative;
     overflow: hidden;
+
+    /* AUTO MODE: rece, verde-albăstrui */
+    background: linear-gradient(
+        135deg,
+        rgba(45, 212, 191, 0.30),
+        rgba(191, 219, 254, 0.82),
+        rgba(255, 255, 255, 0.98)
+    );
+    background-size: 260% 260%;
+    animation: overviewAutoGradient 20s ease-in-out infinite alternate;
+
+    /* păstrăm shadow-ul tare, ca 3D */
+    box-shadow: 0 30px 70px rgba(15, 23, 42, 0.28);
 }
 
-/* Glow pe margini, doar ca un halou extern foarte smooth */
+/* GLOW pe margini, comun pentru ambele moduri */
 #overview-card::before,
 #controls-card::before {
     content: "";
     position: absolute;
-    inset: -40px; /* mărimea glowlui extern */
+    inset: -38px;
     z-index: -1;
-
-    background: radial-gradient(
-        circle,
-        rgba(120, 200, 255, 0.22),
-        rgba(140, 255, 200, 0.22),
-        rgba(255, 255, 255, 0) 70%
-    );
-
-    filter: blur(55px);
     pointer-events: none;
+
+    background:
+        radial-gradient(circle at 0% 0%,
+            rgba(56, 189, 248, 0.28),
+            rgba(255, 255, 255, 0) 60%)
+      ,
+        radial-gradient(circle at 100% 0%,
+            rgba(34, 197, 94, 0.28),
+            rgba(255, 255, 255, 0) 60%)
+      ,
+        radial-gradient(circle at 0% 100%,
+            rgba(251, 191, 36, 0.22),
+            rgba(255, 255, 255, 0) 60%)
+      ,
+        radial-gradient(circle at 100% 100%,
+            rgba(129, 140, 248, 0.22),
+            rgba(255, 255, 255, 0) 60%);
+    filter: blur(34px);
+    animation: overviewGlow 24s ease-in-out infinite alternate;
 }
+
+/* MANUAL MODE: cald, portocaliu + albastru */
+#overview-card.manual-mode,
+#controls-card.manual-mode {
+    background: linear-gradient(
+        135deg,
+        rgba(248, 171, 89, 0.40),
+        rgba(248, 250, 252, 0.95),
+        rgba(129, 199, 255, 0.75)
+    );
+    background-size: 320% 320%;
+    animation: overviewManualGradient 22s ease-in-out infinite alternate;
+}
+
+/* în manual întărim puțin glow-ul */
+#overview-card.manual-mode::before,
+#controls-card.manual-mode::before {
+    filter: blur(40px);
+    opacity: 1;
+}
+
+/* AUTO – mișcare lentă a gradientului */
+@keyframes overviewAutoGradient {
+    0%   { background-position: 0% 0%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 100%; }
+}
+
+/* MANUAL – mișcare puțin mai nervoasă */
+@keyframes overviewManualGradient {
+    0%   { background-position: 0% 50%; }
+    33%  { background-position: 100% 0%; }
+    66%  { background-position: 50% 100%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* GLOW-ul de pe margini se plimbă încet */
+@keyframes overviewGlow {
+    0%   { transform: translate3d(-8px,-6px,0); }
+    50%  { transform: translate3d(10px,4px,0); }
+    100% { transform: translate3d(-4px,10px,0); }
+}
+
 /* SECȚIUNE CONTROALE MANUAL ÎN INTERIORUL CARDULUI PRINCIPAL */
 .controls-section.hidden {
     display:none;
