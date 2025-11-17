@@ -55,7 +55,13 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 50;
-    transition: opacity 0.6s ease, transform 0.6s ease, visibility 0.6s ease;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition:
+        opacity 0.6s ease,
+        transform 0.6s ease,
+        visibility 0.6s ease;
 }
 #splash.hide {
     opacity: 0;
@@ -171,6 +177,7 @@ body {
 }
 
 .card {
+    position: relative;
     background: rgba(255,255,255,0.97);
     border-radius: var(--radius-lg);
     padding: 26px 28px;
@@ -595,28 +602,11 @@ input[type="range"]:disabled {
     color: rgba(15,23,42,0.7);
     text-shadow: 0 1px 2px rgba(255,255,255,0.8);
 }
-/* --- Modificare tab principal în modul MANUAL --- */
-/* --- Modificare tab principal în modul MANUAL (gradient animat) --- */
 
+/* --- MANUAL MODE: smooth multi-color animated gradient pentru OVERVIEW --- */
 #overview-card.manual-mode {
-    box-shadow: 0 32px 70px rgba(0,0,0,0.28);
-    border-color: rgba(248,171,89,0.7);
-    background-image: linear-gradient(
-        120deg,
-        rgba(249,115,22,0.45),    /* portocaliu cald */
-        #fff7ed,                  /* crem deschis */
-        #e0f2fe,                  /* albastru foarte palid */
-        #bfdbfe                   /* albastru mai puternic */
-    );
-    background-size: 320% 320%;
-    animation: overviewManualGradient 14s ease-in-out infinite;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-/* ascund gridul de metrici în manual – rămâne doar temperatura + health */
-/* --- MANUAL MODE: smooth multi-color animated gradient --- */
-
-#overview-card.manual-mode {
+    position: relative;
+    overflow: hidden;
     border-color: rgba(255,255,255,0.45);
     background: linear-gradient(
         145deg,
@@ -632,6 +622,10 @@ input[type="range"]:disabled {
         0 60px 120px rgba(0,0,0,0.20),
         inset 0 0 60px rgba(255,255,255,0.30),
         inset 0 0 120px rgba(255,180,120,0.25);
+    transition:
+        background 0.6s ease,
+        box-shadow 0.4s ease,
+        border-color 0.4s ease;
 }
 
 /* margini foarte difuze pentru citire curată */
@@ -649,17 +643,19 @@ input[type="range"]:disabled {
     z-index: -1;
 }
 
-/* ascund metrics grid */
-#overview-card.manual-mode .metrics-grid { display: none; }
+/* ascund metrics grid în manual – rămâne doar temperatura + health */
+#overview-card.manual-mode .metrics-grid {
+    display: none;
+}
 
-/* indicator */
+/* indicator vizual în titlu că e manual */
 #overview-card.manual-mode .card-title::after {
     content: " · Manual mode";
     color: #15803d;
     font-weight: 500;
 }
 
-/* animația */
+/* animația pentru overview manual */
 @keyframes overviewSmooth {
     0%   { background-position:   0% 50%; }
     25%  { background-position: 100% 50%; }
@@ -667,11 +663,3 @@ input[type="range"]:disabled {
     75%  { background-position: 300% 50%; }
     100% { background-position:   0% 50%; }
 }
-/* super-smooth transition */
-#overview-card.manual-mode {
-    transition: 
-        background 0.6s ease,
-        box-shadow 0.4s ease,
-        border-color 0.4s ease;
-}
-
