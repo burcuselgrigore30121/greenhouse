@@ -262,22 +262,15 @@ function setModeUI(manual, publish) {
         allElements.btnAuto.classList.remove("active");
         allElements.modeChip.textContent = "MANUAL";
         allElements.controlsCard.classList.remove("hidden");
+        allElements.overviewCard.classList.add("manual-mode");
     } else {
         allElements.btnManual.classList.remove("active");
         allElements.btnAuto.classList.add("active");
         allElements.modeChip.textContent = "AUTO";
         allElements.controlsCard.classList.add("hidden");
+        allElements.overviewCard.classList.remove("manual-mode");
 
-        // resetăm tot când ieșim din manual
         resetManualControls();
-    }
-
-    // aplică look-ul de manual / auto pe overview + controls
-    if (allElements.overviewCard) {
-        allElements.overviewCard.classList.toggle("manual-mode", manual);
-    }
-    if (allElements.controlsCard) {
-        allElements.controlsCard.classList.toggle("manual-mode", manual);
     }
 
     updateSliderFill(allElements.fanSlider);
