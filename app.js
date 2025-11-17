@@ -197,18 +197,20 @@ function resetManualControls() {
     updateFanVisual();
 
     // LAMP
-    allElements.lampToggle.classList.remove("on");
-    allElements.lampToggleLabel.textContent = "Off";
-    allElements.lampMain.textContent = "Off";
-    allElements.lampSlider.value = 0;
-    allElements.lampValue.textContent = "0%";
-    currentLampColor = "#a855f7"; // mov default
-    updateSliderFill(allElements.lampSlider, currentLampColor);
-    allElements.lampDots.forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.color === currentLampColor);
-    });
-    allElements.lampCard.style.background = "#f9fafb";
-    allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
+  // LAMP
+allElements.lampToggle.classList.remove("on");
+allElements.lampToggleLabel.textContent = "Off";
+allElements.lampMain.textContent = "Off";
+allElements.lampSlider.value = 0;
+currentLampColor = null;
+
+// scoatem orice highlight de pe punctele de culoare
+allElements.lampDots.forEach(btn => {
+    btn.classList.remove("active");
+});
+
+updateLampVisual();
+
 
     // PUMP
     allElements.pumpToggle.classList.remove("on");
@@ -260,6 +262,42 @@ function setModeUI(manual, publish) {
     }
 }
 
+function hexToRgba(hex, alpha) {
+    const h = hex.replace("#", "");
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Lampă – actualizare completă (valoare + culoare + glow)
+function updateLampVisual() {
+    const v = Number(allElements.lampSlider.value) || 0;
+    const hasColor = !!currentLampColor;
+
+    allElements.lampValue.textContent = `${v}%`;
+
+    // Fără culoare sau intensitate 0 → card neutru
+    if (!hasColor || v === 0) {
+        updateSliderFill(allElements.lampSlider);  // verde default sau gri
+        allElements.lampCard.style.background = "#f9fafb";
+        allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
+        return;
+    }
+
+    // Avem culoare și intensitate > 0 → colorăm slider + glow după intensitate
+    updateSliderFill(allElements.lampSlider, currentLampColor);
+
+    const r = v / 100;                           // 0..1
+    const alpha = 0.18 + 0.35 * r;              // cât de puternică e pata de culoare
+    const glow  = 14 + 20  * r;                 // mărimea umbrei
+
+    allElements.lampCard.style.background =
+        `radial-gradient(circle at 0% 0%, ${hexToRgba(currentLampColor, alpha)}, #f9fafb 55%, #f9fafb 100%)`;
+
+    allElements.lampCard.style.boxShadow =
+        `0 ${glow}px ${glow * 2}px ${hexToRgba(currentLampColor, 0.55)}`;
+}
 
 // MESAJ MQTT PRIMIT
 function onMessageArrived(message) {
@@ -345,13 +383,18 @@ allElements.fanSlider.addEventListener("change", () => {
 allElements.lampToggle.addEventListener("click", () => {
     const on = !allElements.lampToggle.classList.contains("on");
     allElements.lampToggle.classList.toggle("on", on);
+
     const label = on ? "On" : "Off";
     allElements.lampToggleLabel.textContent = label;
-    allElements.lampMain.textContent = label;
+    allElements.lampMain.textContent       = label;
+
     publishMessage(TOPIC_CMD_LAMP_POWER, on ? "on" : "off");
-    allElements.lampCard.style.boxShadow = on
-        ? "0 18px 38px rgba(148,163,253,0.55)"
-        : "0 10px 24px rgba(15,23,42,0.14)";
+
+    // când oprești lampa, o facem vizual neutră (dar păstrăm intensitatea curentă în slider)
+    if (!on) {
+        allElements.lampSlider.value = 0;
+    }
+    updateLampVisual();
 });
 
 allElements.lampSlider.addEventListener("input", () => {
