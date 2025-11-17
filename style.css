@@ -918,4 +918,17 @@ input[type="range"]:disabled {
     content: "";
 }
 
+/* === CONTROLS: doar cardurile mici, fara fundal mare in spate === */
+#controls-card {
+    background: transparent !important;   /* niciun background propriu */
+    box-shadow: none !important;         /* fara umbra mare */
+    border: none !important;             /* fara contur */
+    border-radius: 0 !important;         /* sa nu se mai vada „rama” mare */
+    padding: 0 !important;               /* dispar marginile albe din jur */
+}
+
+/* siguram ca nu exista niciun glow / gradient pe el */
+#controls-card::before {
+    content: none !important;
+}
 
