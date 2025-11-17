@@ -276,14 +276,7 @@ body {
 }
 
 .chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(236,252,203,0.9);
-    color: #4f46e5;
-    font-size: 11px;
-    gap: 6px;
+    display: none;
 }
 .chip-dot {
     width: 7px;
