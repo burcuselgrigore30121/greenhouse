@@ -255,6 +255,8 @@ function setModeUI(manual, publish) {
 
         // === RESETARE COMPLETĂ MANUAL MODE ===
         resetManualControls();
+// oprire animație / revenire la look normal
+allElements.overviewCard.classList.remove("manual-mode");
 
         // === RESETARE FAN COOLING dacă există ===
         if (allElements.coolSlider) {
