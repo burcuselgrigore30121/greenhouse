@@ -234,31 +234,29 @@ function setModeUI(manual, publish) {
     isManualMode = manual;
 
     if (manual) {
-        // ACTIVEZI MODUL MANUAL
+        // MANUAL ON
         allElements.btnManual.classList.add("active");
         allElements.btnAuto.classList.remove("active");
         allElements.modeChip.textContent = "MANUAL";
         allElements.controlsCard.classList.remove("hidden");
 
-        // activezi UI manual pentru overview
+        // overview gradient ON
         allElements.overviewCard.classList.add("manual-mode");
 
     } else {
-        // REVII PE AUTO
+        // AUTO ON
         allElements.btnManual.classList.remove("active");
         allElements.btnAuto.classList.add("active");
         allElements.modeChip.textContent = "AUTO";
         allElements.controlsCard.classList.add("hidden");
 
-        // oprești gradientul manual din overview
+        // overview OFF
         allElements.overviewCard.classList.remove("manual-mode");
 
-        // === RESETARE COMPLETĂ MANUAL MODE ===
+        // reset tot manual control
         resetManualControls();
-// oprire animație / revenire la look normal
-allElements.overviewCard.classList.remove("manual-mode");
 
-        // === RESETARE FAN COOLING dacă există ===
+        // reset coolSlider dacă există
         if (allElements.coolSlider) {
             allElements.coolSlider.value = 0;
             allElements.coolValue.textContent = "0%";
@@ -266,10 +264,11 @@ allElements.overviewCard.classList.remove("manual-mode");
         }
     }
 
-    // actualizări generale
+    // slider + fan vizual
     updateSliderFill(allElements.fanSlider);
     updateFanVisual();
 
+    // publish MQTT
     if (publish) {
         publishMessage(TOPIC_CMD_MODE, manual ? "manual" : "auto");
         if (manual) {
@@ -277,6 +276,7 @@ allElements.overviewCard.classList.remove("manual-mode");
         }
     }
 }
+
 
 
     // schimbă și tabul principal (pentru gradientul animat)
