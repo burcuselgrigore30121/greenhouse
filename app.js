@@ -19,8 +19,7 @@ const TOPIC_CMD_PUMP_SPEED  = "sera/comenzi/pompa/speed";
 const TOPIC_CMD_HEAT_LEVEL  = "sera/comenzi/incalzire/level";
 
 let isManualMode = false;
-let currentLampColor = "#a855f7";
-
+let currentLampColor = null;
 // ELEMENTE DOM
 const allElements = {
     btnAuto: document.getElementById("btn-auto"),
