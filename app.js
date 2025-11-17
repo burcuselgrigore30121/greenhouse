@@ -272,6 +272,15 @@ function setModeUI(manual, publish) {
 
         resetManualControls();
     }
+     function hexToRgba(hex, alpha) {
+    if (!hex) return `rgba(0,0,0,${alpha})`;
+    const h = hex.replace("#", "");
+    const bigint = parseInt(h, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgba(${r},${g},${b},${alpha})`;
+}
 
     updateSliderFill(allElements.fanSlider);
     updateFanVisual();
@@ -286,26 +295,18 @@ function setModeUI(manual, publish) {
 
 // =============== FAN =================
 function updateFanVisual() {
-    const val = Number(allElements.fanSlider.value);
-
-    if (isManualMode && val > 0) {
+    const v = Number(allElements.fanSlider.value);
+    if (isManualMode && v > 0) {
         allElements.fanVisual.classList.add("spin");
-
-        // mapăm 0..100% -> 1.8s .. 0.35s
-        const pct = Math.max(0, Math.min(100, val));
-        let duration = 1.8 - (pct / 100) * 1.45;
-        if (duration < 0.35) duration = 0.35;
-
-        if (allElements.fanBlades) {
-            allElements.fanBlades.style.setProperty("--fan-speed", duration.toFixed(2) + "s");
-        }
+        const min = 0.18, max = 1.0;
+        const dur = max - (max - min) * (v / 100);
+        allElements.fanVisual.style.setProperty("--fan-speed", `${dur.toFixed(2)}s`);
     } else {
         allElements.fanVisual.classList.remove("spin");
-        if (allElements.fanBlades) {
-            allElements.fanBlades.style.removeProperty("--fan-speed");
-        }
+        allElements.fanVisual.style.removeProperty("--fan-speed");
     }
 }
+
 
 // reset complet la ieșirea din manual
 function resetManualControls() {
@@ -322,9 +323,9 @@ function resetManualControls() {
     allElements.lampSlider.value = 0;
     allElements.lampValue.textContent = "0%";
     currentLampColor = null;
-    updateSliderFill(allElements.lampSlider); // verde default
+    updateSliderFill(allElements.lampSlider);
     allElements.lampDots.forEach(btn => btn.classList.remove("active"));
-    allElements.lampCard.style.background = "#f9fafb";
+    allElements.lampCard.style.background = "#ffffff";
     allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
 
     // PUMP
@@ -339,7 +340,9 @@ function resetManualControls() {
     // HEAT
     allElements.heatSlider.value = 0;
     allElements.heatValue.textContent = "0%";
-    allElements.heatSlider.dispatchEvent(new Event("input"));
+    allElements.heatCard.style.background = "#ffffff";
+    allElements.heatCard.style.borderColor = "#e5e7eb";
+    allElements.heatCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
 }
 
 // =============== EVENT LISTENERS =================
@@ -376,21 +379,21 @@ allElements.lampSlider.addEventListener("input", () => {
     const v = Number(allElements.lampSlider.value);
     allElements.lampValue.textContent = `${v}%`;
 
-    const baseColor = currentLampColor || "var(--accent)";
-    updateSliderFill(allElements.lampSlider, baseColor);
+    if (currentLampColor) {
+        updateSliderFill(allElements.lampSlider, currentLampColor);
 
-    // dacă avem culoare selectată, facem background-ul mai colorat
-    if (!currentLampColor || v === 0) {
-        allElements.lampCard.style.background = "#f9fafb";
+        if (v === 0) {
+            allElements.lampCard.style.background = "#ffffff";
+        } else {
+            const alpha = 0.12 + 0.25 * (v / 100);
+            allElements.lampCard.style.background =
+                `radial-gradient(circle at 0% 0%, ${hexToRgba(currentLampColor, alpha)}, #f9fafb 55%, #ffffff 100%)`;
+        }
     } else {
-        let alphaSuffix = "22";
-        if (v >= 30 && v < 70) alphaSuffix = "44";
-        else if (v >= 70) alphaSuffix = "66";
-
-        allElements.lampCard.style.background =
-            `radial-gradient(circle at 0% 0%, ${currentLampColor}${alphaSuffix}, #f9fafb 55%, #f9fafb 100%)`;
+        updateSliderFill(allElements.lampSlider); // verde default
+        allElements.lampCard.style.background = "#ffffff";
     }
-});
+})
 allElements.lampSlider.addEventListener("change", () => {
     publishMessage(TOPIC_CMD_LAMP_BRIGHT, allElements.lampSlider.value);
 });
@@ -405,18 +408,11 @@ allElements.lampDots.forEach(btn => {
         updateSliderFill(allElements.lampSlider, currentLampColor);
 
         const v = Number(allElements.lampSlider.value);
-        let alphaSuffix = "22";
-        if (v >= 30 && v < 70) alphaSuffix = "44";
-        else if (v >= 70) alphaSuffix = "66";
-
-        if (v === 0) {
+        if (v > 0) {
+            const alpha = 0.12 + 0.25 * (v / 100);
             allElements.lampCard.style.background =
-                `radial-gradient(circle at 0% 0%, ${currentLampColor}22, #f9fafb 55%, #f9fafb 100%)`;
-        } else {
-            allElements.lampCard.style.background =
-                `radial-gradient(circle at 0% 0%, ${currentLampColor}${alphaSuffix}, #f9fafb 55%, #f9fafb 100%)`;
+                `radial-gradient(circle at 0% 0%, ${hexToRgba(currentLampColor, alpha)}, #f9fafb 55%, #ffffff 100%)`;
         }
-
         publishMessage(TOPIC_CMD_LAMP_COLOR, currentLampColor);
     });
 });
