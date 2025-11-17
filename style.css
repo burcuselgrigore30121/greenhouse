@@ -334,37 +334,51 @@ body {
 }
 
 /* BARA AUTO / MANUAL SUB TAB PRINCIPAL */
-.mode-bar {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:16px;
+/* HEADER OVERVIEW: Auto / Manual în dreapta */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
 }
+
+.card-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Butoane modul */
 .mode-buttons {
     display:flex;
-    gap:8px;
+    gap:6px;
 }
+
 .mode-btn {
-    padding:7px 16px;
+    padding:6px 14px;
     border-radius:999px;
     border:1px solid rgba(226,232,240,0.95);
     background:#f9fafb;
-    font-size:13px;
+    font-size:12px;
     cursor:pointer;
     font-family:inherit;
-    transition:background .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease;
+    transition:
+        background .15s ease,
+        box-shadow .15s ease,
+        border-color .15s ease,
+        color .15s ease,
+        transform .1s ease;
 }
+
 .mode-btn.active {
     background:var(--accent-soft);
     border-color:#4ade80;
     color:#065f46;
-    box-shadow:0 12px 28px rgba(16,185,129,0.4);
+    box-shadow:0 10px 24px rgba(16,185,129,0.45);
     font-weight:600;
+    transform: translateY(-1px);
 }
-.mode-hint {
-    font-size:11px;
-    color:var(--text-muted);
-}
+
 
 /* SLIDERE CU BARA UMPLUTĂ */
 input[type="range"] {
