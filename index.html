@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Greenhouse</title>
-    <link rel="icon" type="image/png" href="/icon.png">
-    <link rel="apple-touch-icon" href="/icon.png">
+
+    <!-- TAB ICON (put your PNG next to this HTML; keep the same filename) -->
+    <link rel="icon" type="image/png" href="green-house-logo.png">
+    <link rel="apple-touch-icon" href="green-house-logo.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#00b074">
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
 
     <style>
@@ -17,57 +19,78 @@
             --card: #ffffff;
             --accent: #00b074;
             --accent-soft: #e2f7ef;
-            --text-main: #111827;
+            --accent-deep: #059669;
+            --accent-dark: #064e3b;
+            --text-main: #020617;
             --text-muted: #6b7280;
             --border: #e5e7eb;
             --danger: #ef4444;
-            --radius-lg: 18px;
-            --shadow-soft: 0 18px 35px rgba(15, 23, 42, 0.10);
-            --shadow-small: 0 6px 15px rgba(15, 23, 42, 0.08);
+            --radius-lg: 20px;
+            --shadow-soft: 0 22px 45px rgba(15, 23, 42, 0.18);
+            --shadow-small: 0 10px 24px rgba(15, 23, 42, 0.12);
             --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Text",
                          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
+
         * { box-sizing: border-box; }
+
+        /* LIVE BACKGROUND (animated gradient with site colors) */
         body {
             margin: 0;
-            padding: 20px;
+            padding: 24px;
             min-height: 100vh;
             font-family: var(--font-main);
-            background: linear-gradient(135deg, #eafff3 0%, #b8ffd0 40%, #8df6b7 100%);
-            color: var(--text-main);
             font-size: 18px;
+            color: var(--text-main);
+            background: radial-gradient(circle at 0% 0%, #e0ffe8 0, #c4ffe0 22%, #8df6b7 45%, #00b074 70%, #064e3b 100%);
+            background-size: 220% 220%;
+            animation: greenhouseGradient 26s ease-in-out infinite alternate;
         }
+
+        @keyframes greenhouseGradient {
+            0%   { background-position: 0% 0%;     }
+            25%  { background-position: 50% 0%;    }
+            50%  { background-position: 100% 50%;  }
+            75%  { background-position: 50% 100%;  }
+            100% { background-position: 0% 50%;    }
+        }
+
         .screen {
             max-width: 480px;
             margin: 0 auto;
         }
+
         @media (min-width: 900px) {
-            .screen { max-width: 1250px; }
-            .card-title { font-size: 18px !important; }
-            .metric-value { font-size: 24px !important; }
-            .metric-label { font-size: 16px !important; }
-            .temp-main { font-size: 58px; }
-            .fan-value-main { font-size: 32px; }
-            input[type="range"]::-webkit-slider-thumb { width: 28px; height: 28px; }
-            .mode-labels span { padding: 8px 16px; font-size: 16px; }
+            .screen { max-width: 1200px; }
+            body    { padding: 40px; }
+
+            .card-title { font-size: 16px !important; }
+            .metric-value { font-size: 22px !important; }
+            .metric-label { font-size: 14px !important; }
+            .temp-main { font-size: 56px; }
+            .fan-value-main { font-size: 30px; }
+            input[type="range"]::-webkit-slider-thumb { width: 26px; height: 26px; }
+            .mode-labels span { padding: 8px 16px; font-size: 14px; }
         }
 
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
         .top-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 14px;
         }
+
+        /* LOGO BOX */
         .top-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.7);
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.92);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -75,22 +98,26 @@
             overflow: hidden;
         }
         .top-logo img {
-            max-width: 100%;
-            max-height: 100%;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
+
         .top-text {
             display: flex;
             flex-direction: column;
+            gap: 2px;
         }
         .location-label {
-            font-size: 14px;
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 0.12em;
-            color: var(--text-muted);
+            color: rgba(15,23,42,0.55);
         }
         .location-name {
             font-weight: 700;
             font-size: 26px;
+            letter-spacing: 0.02em;
         }
         .top-right {
             font-size: 12px;
@@ -101,13 +128,15 @@
         .pill {
             display: inline-flex;
             align-items: center;
-            padding: 4px 10px;
+            padding: 5px 11px;
             border-radius: 999px;
-            background: #ecfdf5;
+            background: rgba(236,253,245,0.95);
             color: #047857;
             font-size: 11px;
             font-weight: 600;
             gap: 6px;
+            box-shadow: 0 8px 18px rgba(16,185,129,0.28);
+            backdrop-filter: blur(12px);
         }
         .pill-dot {
             width: 8px;
@@ -117,8 +146,9 @@
             box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.35);
         }
         .pill.disconnected {
-            background: #fff1f2;
+            background: rgba(254,242,242,0.96);
             color: var(--danger);
+            box-shadow: 0 8px 18px rgba(239,68,68,0.25);
         }
         .pill.disconnected .pill-dot {
             background: var(--danger);
@@ -126,23 +156,25 @@
         }
 
         .card {
-            background: var(--card);
+            background: rgba(255,255,255,0.94);
             border-radius: var(--radius-lg);
-            padding: 28px 32px;
+            padding: 26px 28px;
+            margin-bottom: 24px;
             box-shadow: var(--shadow-soft);
-            margin-bottom: 26px;
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255,255,255,0.8);
         }
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 14px;
         }
         .card-title {
             font-size: 13px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.08em;
             color: var(--text-muted);
         }
         .card-subtitle {
@@ -152,12 +184,13 @@
 
         .temp-row {
             display: flex;
-            align-items: baseline;
-            gap: 12px;
+            align-items: center;
+            gap: 18px;
         }
         .temp-main {
-            font-size: 40px;
+            font-size: 42px;
             font-weight: 700;
+            line-height: 1;
         }
         .temp-main span {
             font-size: 22px;
@@ -167,7 +200,7 @@
         .temp-extra {
             display: flex;
             flex-direction: column;
-            font-size: 12px;
+            font-size: 13px;
             color: var(--text-muted);
             gap: 2px;
         }
@@ -175,31 +208,32 @@
         .chip {
             display: inline-flex;
             align-items: center;
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 999px;
-            background: #f3f4ff;
+            background: rgba(236,252,203,0.9);
             color: #4f46e5;
             font-size: 11px;
             gap: 6px;
         }
         .chip-dot {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 999px;
             background: #4f46e5;
         }
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 6px;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 12px;
+            margin-top: 14px;
         }
         .metric-card {
-            background: #f9fafb;
-            border-radius: 14px;
+            background: radial-gradient(circle at 0% 0%, #f0fdf4 0, #f9fafb 55%, #eef2ff 110%);
+            border-radius: 16px;
             padding: 10px 12px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(226,232,240,0.9);
+            box-shadow: 0 10px 25px rgba(15,23,42,0.06);
         }
         .metric-label {
             font-size: 11px;
@@ -226,27 +260,27 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 10px;
-            padding: 10px 12px;
-            border-radius: 14px;
-            background: var(--accent-soft);
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(5,150,105,0.06));
         }
         .health-left {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 3px;
         }
         .health-label {
             font-size: 12px;
             color: var(--text-muted);
         }
         .health-value {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
-            color: var(--accent);
+            color: var(--accent-dark);
         }
         .health-badge {
-            padding: 2px 8px;
+            padding: 2px 9px;
             border-radius: 999px;
             background: #dcfce7;
             color: #15803d;
@@ -260,7 +294,7 @@
             flex: 0 0 40%;
             height: 8px;
             border-radius: 999px;
-            background: #e5e7eb;
+            background: rgba(229,231,235,0.9);
             overflow: hidden;
         }
         .health-bar-fill {
@@ -274,7 +308,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         .mode-labels {
             display: flex;
@@ -282,38 +316,41 @@
             font-size: 12px;
         }
         .mode-labels span {
-            padding: 6px 12px;
+            padding: 6px 13px;
             border-radius: 999px;
             border: 1px solid transparent;
             cursor: pointer;
             user-select: none;
+            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
         }
         .mode-labels .active {
             background: var(--accent-soft);
             color: #047857;
             border-color: #a7f3d0;
             font-weight: 600;
+            box-shadow: 0 10px 24px rgba(16,185,129,0.35);
         }
         .mode-labels .inactive {
             color: var(--text-muted);
-            border-color: #e5e7eb;
+            border-color: rgba(226,232,240,0.9);
             background: #f9fafb;
         }
 
-        .fan-slider-row { margin-top: 10px; }
+        .fan-slider-row { margin-top: 12px; }
         .fan-value-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 12px;
             color: var(--text-muted);
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         .fan-value-main {
             font-size: 20px;
             font-weight: 600;
-            color: var(--accent);
+            color: var(--accent-deep);
         }
+
         input[type="range"] {
             width: 100%;
             -webkit-appearance: none;
@@ -329,7 +366,7 @@
             height: 22px;
             border-radius: 999px;
             background: var(--accent);
-            box-shadow: 0 2px 6px rgba(34, 197, 94, 0.6);
+            box-shadow: 0 2px 6px rgba(34, 197, 94, 0.7);
             cursor: pointer;
         }
         input[type="range"]:disabled::-webkit-slider-thumb {
@@ -341,9 +378,10 @@
         }
 
         .footer-line {
-            margin-top: 8px;
+            margin-top: 6px;
             font-size: 12px;
-            color: var(--text-muted);
+            color: rgba(15,23,42,0.7);
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
         }
     </style>
 </head>
@@ -352,8 +390,8 @@
     <div class="top-bar">
         <div class="top-left">
             <div class="top-logo">
-                <!-- Optional logo image -->
-                <!-- <img src="/greenhouse-logo.png" alt="Logo"> -->
+                <!-- put /mnt/data/—Pngtree—green house logo_6962806.png as green-house-logo.png next to this HTML -->
+                <img src="green-house-logo.png" alt="Green House Logo">
             </div>
             <div class="top-text">
                 <div class="location-label">Greenhouse</div>
@@ -366,7 +404,7 @@
         </div>
     </div>
 
-    <div style="margin-bottom: 10px;">
+    <div style="margin-bottom: 12px;">
         <span class="pill" id="status-pill">
             <span class="pill-dot"></span>
             <span id="status-text">Connecting...</span>
@@ -467,20 +505,18 @@
 
 <script>
     // MQTT configuration (HiveMQ Cloud)
-   // --------- 2. MQTT CONFIG ---------
-const MQTT_HOST = "broker.emqx.io";
-const MQTT_PORT = 8084; // WebSocket secure (WSS)
-const MQTT_USER = "";
-const MQTT_PASS = "";
-const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8);
-
+    const MQTT_HOST = "broker.emqx.io";
+    const MQTT_PORT = 8084; // WebSocket secure (WSS)
+    const MQTT_USER = "";
+    const MQTT_PASS = "";
+    const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8);
 
     const TOPIC_CMD_FAN       = "sera/comenzi/ventilator";
     const TOPIC_CMD_MODE      = "sera/comenzi/mod";
     const TOPIC_STAT_SENZORI  = "sera/stare/senzori";
 
     const allElements = {
-        modeToggle: null, // left for compatibility, we use buttons now
+        modeToggle: null,
         labelAuto: document.getElementById("label-auto"),
         labelManual: document.getElementById("label-manual"),
         fanSlider: document.getElementById("fan-slider"),
@@ -508,7 +544,7 @@ const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8)
         statusText: document.getElementById("status-text")
     };
 
-   const client = new Paho.MQTT.Client(MQTT_HOST, Number(MQTT_PORT), MQTT_CLIENT_ID);
+    const client = new Paho.MQTT.Client(MQTT_HOST, Number(MQTT_PORT), MQTT_CLIENT_ID);
 
     client.onConnectionLost = onConnectionLost;
     client.onMessageArrived = onMessageArrived;
@@ -609,7 +645,7 @@ const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8)
             else allElements.healthBadge.textContent = "Attention";
 
             const isManual = data.mode === "manual";
-            setModeUI(isManual, false); // only update UI, do not publish
+            setModeUI(isManual, false);
             if (document.activeElement !== allElements.fanSlider) {
                 allElements.fanSlider.value = data.fan_pct;
                 allElements.fanValue.textContent = `${data.fan_pct}%`;
@@ -625,21 +661,20 @@ const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8)
     }
 
     function startConnect() {
-    allElements.statusText.textContent = "Connecting...";
-    allElements.statusPill.classList.add("disconnected");
-    client.connect({
-        onSuccess: onConnect,
-        useSSL: true,        // pentru 8084
-        userName: MQTT_USER,
-        password: MQTT_PASS,
-        onFailure: (err) => {
-            console.error("Connection failed:", err.errorMessage);
-            allElements.statusText.textContent = "Error";
-            setTimeout(startConnect, 5000);
-        }
-    });
-}
-
+        allElements.statusText.textContent = "Connecting...";
+        allElements.statusPill.classList.add("disconnected");
+        client.connect({
+            onSuccess: onConnect,
+            useSSL: true,
+            userName: MQTT_USER,
+            password: MQTT_PASS,
+            onFailure: (err) => {
+                console.error("Connection failed:", err.errorMessage);
+                allElements.statusText.textContent = "Error";
+                setTimeout(startConnect, 5000);
+            }
+        });
+    }
 
     function publishMessage(topic, payload) {
         if (!client.isConnected()) {
@@ -651,7 +686,6 @@ const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8)
         client.send(message);
     }
 
-    // UI mode handling: Auto / Manual via buttons
     function setModeUI(isManual, publish) {
         if (isManual) {
             allElements.labelManual.className = "active";
@@ -669,14 +703,10 @@ const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8)
             publishMessage(TOPIC_CMD_MODE, isManual ? "manual" : "auto");
             if (isManual) {
                 publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
-            } else {
-                // when switching to auto you might want to reset fan
-                // publishMessage(TOPIC_CMD_FAN, "0");
             }
         }
     }
 
-    // Event bindings for buttons and slider
     allElements.labelAuto.addEventListener("click", () => {
         setModeUI(false, true);
     });
@@ -688,7 +718,6 @@ const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8)
         allElements.fanValue.textContent = `${allElements.fanSlider.value}%`;
     });
     allElements.fanSlider.addEventListener("change", () => {
-        // only send when in manual (slider is disabled in auto)
         publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
     });
 
@@ -698,4 +727,3 @@ const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8)
 </script>
 </body>
 </html>
-
