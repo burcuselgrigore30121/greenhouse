@@ -70,7 +70,8 @@ const allElements = {
 
     heatSlider: document.getElementById("heat-slider"),
     heatValue: document.getElementById("heat-value"),
-    heatCard: document.getElementById("heat-card")
+    heatCard: document.getElementById("heat-card"),
+    overviewCard: document.getElementById("overview-card")
 };
 
 const client = new Paho.MQTT.Client(MQTT_HOST, Number(MQTT_PORT), MQTT_CLIENT_ID);
@@ -243,6 +244,12 @@ function setModeUI(manual, publish) {
         allElements.modeChip.textContent = "AUTO";
         allElements.controlsCard.classList.add("hidden");
     }
+
+    // schimbă și tabul principal
+    if (allElements.overviewCard) {
+        allElements.overviewCard.classList.toggle("manual-mode", manual);
+    }
+
     updateSliderFill(allElements.fanSlider);
     updateFanVisual();
 
@@ -253,6 +260,9 @@ function setModeUI(manual, publish) {
         }
     }
 }
+
+
+  
 
 // FAN
 function updateFanVisual() {
