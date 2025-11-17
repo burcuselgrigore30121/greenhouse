@@ -679,3 +679,29 @@ input[type="range"]:disabled {
     75%  { background-position: 300% 50%; }
     100% { background-position:   0% 50%; }
 }
+/* === GLOW DOAR PE CARDURILE MARI === */
+
+#overview-card,
+#controls-card {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Glow pe margini, doar ca un halou extern foarte smooth */
+#overview-card::before,
+#controls-card::before {
+    content: "";
+    position: absolute;
+    inset: -40px; /* mărimea glowlui extern */
+    z-index: -1;
+
+    background: radial-gradient(
+        circle,
+        rgba(120, 200, 255, 0.22),
+        rgba(140, 255, 200, 0.22),
+        rgba(255, 255, 255, 0) 70%
+    );
+
+    filter: blur(55px);
+    pointer-events: none;
+}
