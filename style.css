@@ -596,16 +596,24 @@ input[type="range"]:disabled {
     text-shadow: 0 1px 2px rgba(255,255,255,0.8);
 }
 /* --- Modificare tab principal în modul MANUAL --- */
+/* --- Modificare tab principal în modul MANUAL (gradient animat) --- */
 
 #overview-card.manual-mode {
-    /* ușor alt “feeling” când e manual */
-    box-shadow: 0 32px 70px rgba(248,171,89,0.45);
-    background: radial-gradient(circle at 0% 0%, rgba(248,171,89,0.18), #ffffff 55%, #fefce8 100%);
-    border-color: rgba(248,171,89,0.6);
-    transition: background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    box-shadow: 0 32px 70px rgba(0,0,0,0.28);
+    border-color: rgba(248,171,89,0.7);
+    background-image: linear-gradient(
+        120deg,
+        rgba(249,115,22,0.45),    /* portocaliu cald */
+        #fff7ed,                  /* crem deschis */
+        #e0f2fe,                  /* albastru foarte palid */
+        #bfdbfe                   /* albastru mai puternic */
+    );
+    background-size: 320% 320%;
+    animation: overviewManualGradient 14s ease-in-out infinite;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* ascund gridul de metrici în manual – rămâne doar temperatura + health (scurt) */
+/* ascund gridul de metrici în manual – rămâne doar temperatura + health */
 #overview-card.manual-mode .metrics-grid {
     display: none;
 }
@@ -615,7 +623,7 @@ input[type="range"]:disabled {
     margin-top: 10px;
 }
 
-/* titlu cu indicator vizual că e manual */
+/* indicator în titlu că e manual */
 #overview-card.manual-mode .card-title::after {
     content: " · Manual mode";
     font-weight: 400;
@@ -623,3 +631,11 @@ input[type="range"]:disabled {
     letter-spacing: 0;
     color: #16a34a;
 }
+
+@keyframes overviewManualGradient {
+    0%   { background-position:   0% 50%; }
+    33%  { background-position: 100% 50%; }  /* trecere spre albastru */
+    66%  { background-position: 200% 50%; }  /* rămâne mai mult pe albastru */
+    100% { background-position:   0% 50%; }  /* revine la portocaliu */
+}
+
