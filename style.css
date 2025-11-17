@@ -667,3 +667,11 @@ input[type="range"]:disabled {
     75%  { background-position: 300% 50%; }
     100% { background-position:   0% 50%; }
 }
+/* super-smooth transition */
+#overview-card.manual-mode {
+    transition: 
+        background 0.6s ease,
+        box-shadow 0.4s ease,
+        border-color 0.4s ease;
+}
+
