@@ -766,3 +766,29 @@ input[type="range"]:disabled {
     );
     opacity: 0.6;
 }
+/* ============================
+   CONTROLS-CARD FĂRĂ CARD MARE
+   (rămân doar tab-urile mici)
+   ============================ */
+
+/* Auto */
+#controls-card {
+    background: none;      /* fără gradient */
+    box-shadow: none;      /* fără umbră mare */
+    border: none;          /* fără contur */
+}
+
+/* Manual */
+#controls-card.manual-mode {
+    background: none;
+    box-shadow: none;
+    border: none;
+    animation: none;
+}
+
+/* Scoatem glow-ul de pe margini pentru controls-card */
+#controls-card::before,
+#controls-card.manual-mode::before {
+    content: none;
+}
+
