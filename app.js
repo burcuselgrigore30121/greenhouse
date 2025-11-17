@@ -243,9 +243,12 @@ function setModeUI(manual, publish) {
         allElements.btnAuto.classList.add("active");
         allElements.modeChip.textContent = "AUTO";
         allElements.controlsCard.classList.add("hidden");
+
+        // când părăsești modul Manual → resetezi controalele
+        resetManualControls();
     }
 
-    // schimbă și tabul principal
+    // schimbă și tabul principal (pentru gradientul animat)
     if (allElements.overviewCard) {
         allElements.overviewCard.classList.toggle("manual-mode", manual);
     }
@@ -261,7 +264,6 @@ function setModeUI(manual, publish) {
     }
 }
 
-
   
 
 // FAN
@@ -272,6 +274,42 @@ function updateFanVisual() {
     } else {
         allElements.fanVisual.classList.remove("spin");
     }
+}
+function resetManualControls() {
+    // FAN
+    allElements.fanSlider.value = 0;
+    allElements.fanValue.textContent = "0%";
+    updateSliderFill(allElements.fanSlider);
+    updateFanVisual();
+
+    // LAMP
+    allElements.lampToggle.classList.remove("on");
+    allElements.lampToggleLabel.textContent = "Off";
+    allElements.lampMain.textContent = "Off";
+    allElements.lampSlider.value = 0;
+    allElements.lampValue.textContent = "0%";
+    currentLampColor = "#a855f7"; // mov default
+    updateSliderFill(allElements.lampSlider, currentLampColor);
+    allElements.lampDots.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.color === currentLampColor);
+    });
+    allElements.lampCard.style.background = "#f9fafb";
+    allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
+
+    // PUMP
+    allElements.pumpToggle.classList.remove("on");
+    allElements.pumpToggleLabel.textContent = "Off";
+    allElements.pumpMain.textContent = "Off";
+    allElements.pumpSlider.value = 0;
+    allElements.pumpValue.textContent = "0%";
+    updateSliderFill(allElements.pumpSlider, "#3b82f6");
+    allElements.pumpCard.style.setProperty("--pump-level", "0%");
+
+    // HEAT
+    allElements.heatSlider.value = 0;
+    allElements.heatValue.textContent = "0%";
+    // refolosesc handler-ul de input ca să refacă background-ul normal
+    allElements.heatSlider.dispatchEvent(new Event("input"));
 }
 
 allElements.btnAuto.addEventListener("click", () => setModeUI(false, true));
