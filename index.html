@@ -10,12 +10,14 @@
     <link rel="apple-touch-icon" href="green-house-logo.png">
     <meta name="theme-color" content="#00b074">
 
-    <!-- CSS + JS externe -->
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
-    <script src="app.js" defer></script>
 
-    <!-- MQTT client -->
+    <!-- MQTT client TREBUIE ÎNAINTE de app.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+
+    <!-- JS aplicație -->
+    <script src="app.js" defer></script>
 </head>
 <body>
 <!-- SPLASH -->
@@ -55,7 +57,6 @@
     </div>
 
     <div class="card" id="overview-card">
-
         <div class="card-header">
             <div>
                 <div class="card-title">Overview</div>
@@ -224,4 +225,3 @@
 </div>
 </body>
 </html>
-
