@@ -652,15 +652,13 @@ input[type="range"]:disabled {
     text-shadow: 0 1px 2px rgba(255,255,255,0.8);
 }
 
-/* --- MANUAL MODE: smooth multi-color animated gradient pentru OVERVIEW --- */
-/* cardul de overview are poziție relativă ca să putem desena glow-ul pe margini */
-/* CARDURI MARI: OVERVIEW + CONTROLS */
-#overview-card,
-#controls-card {
+/* === CARDURI MARI: OVERVIEW cu gradient, CONTROLS alb + glow pe margini === */
+
+/* OVERVIEW – gradient animat, live */
+#overview-card {
     position: relative;
     overflow: hidden;
 
-    /* AUTO MODE: rece, verde-albăstrui */
     background: linear-gradient(
         135deg,
         rgba(45, 212, 191, 0.30),
@@ -670,13 +668,11 @@ input[type="range"]:disabled {
     background-size: 260% 260%;
     animation: overviewAutoGradient 20s ease-in-out infinite alternate;
 
-    /* păstrăm shadow-ul tare, ca 3D */
     box-shadow: 0 30px 70px rgba(15, 23, 42, 0.28);
 }
 
-/* GLOW pe margini, comun pentru ambele moduri */
-#overview-card::before,
-#controls-card::before {
+/* GLOW pe margini pentru OVERVIEW */
+#overview-card::before {
     content: "";
     position: absolute;
     inset: -38px;
@@ -703,9 +699,8 @@ input[type="range"]:disabled {
     animation: overviewGlow 24s ease-in-out infinite alternate;
 }
 
-/* MANUAL MODE: cald, portocaliu + albastru */
-#overview-card.manual-mode,
-#controls-card.manual-mode {
+/* OVERVIEW – modul MANUAL: gradient mai cald */
+#overview-card.manual-mode {
     background: linear-gradient(
         135deg,
         rgba(248, 171, 89, 0.40),
@@ -715,6 +710,41 @@ input[type="range"]:disabled {
     background-size: 320% 320%;
     animation: overviewManualGradient 22s ease-in-out infinite alternate;
 }
+
+/* glow puțin mai puternic în manual */
+#overview-card.manual-mode::before {
+    filter: blur(40px);
+    opacity: 1;
+}
+
+/* CONTROLS – fundal ALB, doar glow discret pe margini */
+#controls-card {
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;                    /* interior curat, fără gradient */
+    border-radius: var(--radius-lg);
+    box-shadow: 0 26px 60px rgba(15, 23, 42, 0.20);
+}
+
+/* glow foarte fin doar la margini pentru CONTROLS */
+#controls-card::before {
+    content: "";
+    position: absolute;
+    inset: -32px;
+    z-index: -1;
+    pointer-events: none;
+
+    background:
+        radial-gradient(circle at 0 0,
+            rgba(148, 163, 253, 0.20),
+            transparent 55%),
+        radial-gradient(circle at 100% 100%,
+            rgba(52, 211, 153, 0.18),
+            transparent 55%);
+    filter: blur(32px);
+    animation: overviewGlow 24s ease-in-out infinite alternate;
+}
+
 
 /* în manual întărim puțin glow-ul */
 #overview-card.manual-mode::before,
