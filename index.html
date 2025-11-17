@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Greenhouse</title>
 
-    <!-- LOGO TAB -->
     <link rel="icon" type="image/png" href="green-house-logo.png">
     <link rel="apple-touch-icon" href="green-house-logo.png">
     <meta name="theme-color" content="#00b074">
@@ -14,7 +13,6 @@
 
     <style>
         :root {
-            --bg: #f3f4f7;
             --card: #ffffff;
             --accent: #00b074;
             --accent-soft: #e2f7ef;
@@ -22,13 +20,14 @@
             --accent-dark: #064e3b;
             --text-main: #020617;
             --text-muted: #6b7280;
-            --border: #e5e7eb;
             --danger: #ef4444;
+            --info: #3b82f6; /* Culoare pentru apa */
+            --warn: #f59e0b; /* Culoare pentru caldura */
             --radius-lg: 20px;
-            --shadow-soft: 0 22px 45px rgba(15, 23, 42, 0.18);
-            --shadow-small: 0 10px 24px rgba(15, 23, 42, 0.12);
+            --shadow-soft: 0 26px 60px rgba(15, 23, 42, 0.25);
+            --shadow-card: 0 18px 40px rgba(15, 23, 42, 0.18);
             --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Text",
-                         "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         * { box-sizing: border-box; }
@@ -46,11 +45,11 @@
             animation: greenhouseGradient 26s ease-in-out infinite alternate;
         }
         @keyframes greenhouseGradient {
-            0%   { background-position: 0% 0%;     }
-            25%  { background-position: 50% 0%;    }
-            50%  { background-position: 100% 50%;  }
-            75%  { background-position: 50% 100%;  }
-            100% { background-position: 0% 50%;    }
+            0%   { background-position: 0% 0%;   }
+            25%  { background-position: 50% 0%;   }
+            50%  { background-position: 100% 50%; }
+            75%  { background-position: 50% 100%; }
+            100% { background-position: 0% 50%;   }
         }
 
         .screen {
@@ -78,10 +77,7 @@
             transform: translateY(-16px);
             visibility: hidden;
         }
-        .splash-inner {
-            text-align: center;
-            color: #022c22;
-        }
+        .splash-inner { text-align: center; color: #022c22; }
         .splash-logo {
             width: 120px;
             height: 120px;
@@ -94,20 +90,9 @@
             box-shadow: 0 26px 60px rgba(15,23,42,0.38);
             overflow: hidden;
         }
-        .splash-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        .splash-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        .splash-sub {
-            font-size: 15px;
-            opacity: 0.9;
-        }
+        .splash-logo img { width: 100%; height: 100%; object-fit: contain; }
+        .splash-title { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        .splash-sub { font-size: 15px; opacity: 0.9; }
 
         /* TOP BAR */
         .top-bar {
@@ -116,11 +101,7 @@
             align-items: center;
             margin-bottom: 18px;
         }
-        .top-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
+        .top-left { display: flex; align-items: center; gap: 14px; }
         .top-logo {
             width: 52px;
             height: 52px;
@@ -129,14 +110,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: var(--shadow-small);
+            box-shadow: var(--shadow-soft);
             overflow: hidden;
         }
-        .top-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        .top-logo img { width: 100%; height: 100%; object-fit: contain; }
         .top-text { display: flex; flex-direction: column; gap: 2px; }
         .location-label {
             font-size: 13px;
@@ -144,16 +121,12 @@
             letter-spacing: 0.12em;
             color: rgba(15,23,42,0.55);
         }
-        .location-name {
-            font-weight: 700;
-            font-size: 26px;
-            letter-spacing: 0.02em;
-        }
+        .location-name { font-weight: 700; font-size: 26px; letter-spacing: 0.02em; }
         .top-right {
             font-size: 13px;
-            color: rgba(255,255,255,0.95); /* mai alb */
+            color: rgba(255,255,255,0.98);
             text-align: right;
-            text-shadow: 0 2px 6px rgba(15,23,42,0.6);
+            text-shadow: 0 2px 6px rgba(15,23,42,0.8);
         }
 
         .pill {
@@ -195,947 +168,715 @@
             backdrop-filter: blur(18px);
             border: 1px solid rgba(255,255,255,0.9);
         }
+
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
+            margin-bottom: 20px;
         }
-        .card-title {
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.09em;
-            color: var(--text-muted);
+        .card-title { font-size: 20px; font-weight: 600; }
+        
+        /* GRILA DE SENZORI (din tabul principal) */
+        .sensors-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
-        .card-subtitle {
-            font-size: 13px;
-            color: var(--text-muted);
+        @media (min-width: 900px) {
+            .sensors-grid { grid-template-columns: repeat(4, 1fr); }
         }
-
-        .temp-row {
+        .sensor-item {
+            background: var(--accent-soft);
+            border-radius: 16px;
+            padding: 20px;
             display: flex;
-            align-items: center;
-            gap: 18px;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: var(--shadow-card);
         }
-        .temp-main {
-            font-size: 46px;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .temp-main span {
-            font-size: 24px;
+        .sensor-label {
+            font-size: 14px;
             font-weight: 500;
             color: var(--text-muted);
-        }
-        .temp-extra {
             display: flex;
-            flex-direction: column;
-            font-size: 14px;
-            color: var(--text-muted);
-            gap: 2px;
-        }
-
-        .chip {
-            display: inline-flex;
             align-items: center;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: rgba(236,252,203,0.9);
-            color: #4f46e5;
-            font-size: 11px;
-            gap: 6px;
+            gap: 8px;
         }
-        .chip-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 999px;
-            background: #4f46e5;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0,1fr));
-            gap: 12px;
-            margin-top: 14px;
-        }
-        .metric-card {
-            position: relative;
-            overflow: hidden;
-            border-radius: 18px;
-            padding: 12px 14px;
-            border: 1px solid rgba(226,232,240,0.95);
-            background: radial-gradient(circle at 0% 0%, #f0fdf4 0, #f9fafb 55%, #eef2ff 110%);
-            box-shadow: 0 12px 30px rgba(15,23,42,0.06);
-            animation: metricPulse 8s ease-in-out infinite alternate;
-        }
-        @keyframes metricPulse {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 100% 100%; }
-        }
-        .metric-label {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-        .metric-value {
-            font-size: 20px;
-            font-weight: 600;
-        }
-        .metric-unit {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-left: 4px;
-        }
-        .metric-tag {
-            font-size: 12px;
-            margin-top: 4px;
-        }
-        .metric-tag.good { color: #16a34a; }
-        .metric-tag.bad { color: var(--danger); }
-
-        .health-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 16px;
-            padding: 12px 14px;
-            border-radius: 18px;
-            background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(5,150,105,0.04));
-        }
-        .health-left {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-        .health-label {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-        .health-value {
-            font-size: 24px;
+        .sensor-icon { font-size: 18px; }
+        .sensor-value {
+            font-size: 36px;
             font-weight: 700;
             color: var(--accent-dark);
+            line-height: 1.1;
         }
-        .health-badge {
-            padding: 3px 10px;
-            border-radius: 999px;
-            background: #dcfce7;
-            color: #15803d;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .health-bar {
-            flex: 0 0 40%;
-            height: 8px;
-            border-radius: 999px;
-            background: rgba(229,231,235,0.9);
-            overflow: hidden;
-        }
-        .health-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #22c55e, #22c55e, #a3e635);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-        .mode-row {
+        .sensor-value sup { font-size: 0.5em; font-weight: 600; }
+        
+        /* TABS */
+        .tabs {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            gap: 10px;
+            margin-bottom: 24px;
         }
-        .mode-labels {
-            display: flex;
-            gap: 6px;
-            font-size: 12px;
-        }
-        .mode-labels span {
-            padding: 6px 13px;
-            border-radius: 999px;
-            border: 1px solid transparent;
-            cursor: pointer;
-            user-select: none;
-            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
-        }
-        .mode-labels .active {
-            background: var(--accent-soft);
-            color: #047857;
-            border-color: #a7f3d0;
+        .tab-item {
+            font-size: 16px;
             font-weight: 600;
-            box-shadow: 0 10px 24px rgba(16,185,129,0.35);
-        }
-        .mode-labels .inactive {
+            padding: 14px 22px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.6);
             color: var(--text-muted);
-            border-color: rgba(226,232,240,0.9);
-            background: #f9fafb;
-        }
-
-        /* SLIDERE CU BARA UMPLUTĂ */
-        input[type="range"] {
-            width: 100%;
-            -webkit-appearance: none;
-            height: 8px;
-            border-radius: 999px;
-            background: #e5e7eb;
-            outline: none;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 22px;
-            height: 22px;
-            border-radius: 999px;
-            background: var(--accent);
-            box-shadow: 0 2px 6px rgba(34, 197, 94, 0.7);
             cursor: pointer;
+            position: relative;
+            /* Umbra subtila by default */
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        input[type="range"]::-moz-range-thumb {
-            width: 22px;
-            height: 22px;
-            border-radius: 999px;
-            background: var(--accent);
+        .tab-item.active {
+            background: var(--card);
+            color: var(--text-main);
+            /* Umbra 3D mai puternica pentru tab-ul activ */
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+            transform: translateY(-3px);
+            z-index: 1;
+        }
+        /* Efect HOVER pe tab-urile inactive */
+        .tab-item:not(.active):hover {
+            transform: translateY(-6px) scale(1.03);
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.28);
+            z-index: 2; /* Il aduce in fata */
+            color: var(--text-main);
+        }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* BUTOANE AUTO/MANUAL */
+        .mode-switcher {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .mode-btn {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 16px;
+            border-radius: 16px;
             border: none;
             cursor: pointer;
+            background: rgba(255, 255, 255, 0.6);
+            color: var(--text-muted);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1);
+            transition: all 0.3s ease;
         }
-        input[type="range"]:disabled::-webkit-slider-thumb,
-        input[type="range"]:disabled::-moz-range-thumb {
-            background: #a1a1aa;
-            box-shadow: none;
+        .mode-btn.active {
+            background: var(--accent-deep);
+            color: white;
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
         }
-        input[type="range"]:disabled {
-            background: #e5e7eb;
+        .mode-btn:not(.active):hover {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-main);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
         }
 
-        .fan-slider-row { margin-top: 12px; }
-        .fan-value-row {
+        /* GRILA DE CONTROALE MANUALE */
+        .manual-controls {
+            /* Ascuns by default, JS il va afisa */
+            display: none; 
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 900px) {
+            .manual-controls { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        .control-card {
+            background: var(--card);
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative; /* Pentru pseudo-elemente */
+            overflow: hidden; /* Pentru water-fill si lamp-glow */
+        }
+        .control-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 2;
         }
-        .fan-value-main {
-            font-size: 22px;
+        .control-label {
+            font-size: 15px;
             font-weight: 600;
-            color: var(--accent-deep);
+            color: var(--text-main);
+        }
+        .control-icon {
+            font-size: 24px;
+            color: var(--text-muted);
+        }
+        .control-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin-top: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        .control-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .control-value sup {
+            font-size: 0.5em;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        
+        /* Slider customizat */
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #e5e7eb;
+            outline: none;
+            transition: background 0.3s ease;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 3px solid var(--card);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 3px solid var(--card);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        /* CARD MANUAL */
-        #fan-card {
-            border-radius: 18px;
-            padding: 12px 14px;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            margin-top: 6px;
-            overflow: hidden;
-            position: relative;
+        /* ----- STILURI SPECIFICE CONTROALE ----- */
+        
+        /* 1. FAN SPEED (Ventilator) */
+        .fan-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        /* vânt */
-        #fan-card.fan-breeze::after {
-            content:"";
-            position:absolute;
-            inset:0;
-            background: repeating-linear-gradient(
-                120deg,
-                rgba(56,189,248,0.0),
-                rgba(56,189,248,0.0) 18px,
-                rgba(56,189,248,0.12) 18px,
-                rgba(56,189,248,0.12) 32px
-            );
+        .fan-icon {
+            width: 44px;
+            height: 44px;
+            position: relative;
+            /* By default e oprita. JS adauga 'spinning' si seteaza durata */
+            animation: spin 5s linear infinite; 
+            animation-play-state: paused;
+        }
+        .fan-icon.spinning {
+            animation-play-state: running;
+        }
+        .fan-icon .blade {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--text-muted);
+            border-radius: 30% 70% 30% 70% / 50% 50% 50% 50%;
+            transition: background 0.3s ease;
+        }
+        .fan-icon.spinning .blade {
+            background: var(--accent-deep);
+        }
+        .fan-icon .blade1 { top: 0; left: 0; }
+        .fan-icon .blade2 { top: 0; right: 0; transform: rotate(90deg); }
+        .fan-icon .blade3 { bottom: 0; left: 0; transform: rotate(-90deg); }
+        .fan-icon .blade4 { bottom: 0; right: 0; transform: rotate(180deg); }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 2. LAMP HEAT (Caldura) */
+        .control-lamp {
+            color: var(--warn);
+        }
+        .lamp-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            /* Box-shadow va fi setat de JS */
+            box-shadow: none;
+            transition: box-shadow 0.4s ease-out;
+        }
+        .control-lamp .control-icon { color: var(--warn); }
+        .control-lamp .slider::-webkit-slider-thumb { background: var(--warn); }
+        .control-lamp .slider::-moz-range-thumb { background: var(--warn); }
+        .control-lamp .control-value { color: #d97706; }
+        
+        /* 3. EXTRA (ex. Lumina) */
+        .control-extra .control-icon { color: #d946ef; }
+        .control-extra .slider::-webkit-slider-thumb { background: #d946ef; }
+        .control-extra .slider::-moz-range-thumb { background: #d946ef; }
+        .control-extra .control-value { color: #c026d3; }
+
+        /* 4. WATER PUMP (Pompa Apa) */
+        .control-water .control-icon { color: var(--info); }
+        .control-water .slider::-webkit-slider-thumb { background: var(--info); }
+        .control-water .slider::-moz-range-thumb { background: var(--info); }
+        .control-water .control-value { color: #2563eb; }
+        
+        .water-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            /* Inaltimea e setata de JS */
+            height: 0%; 
+            background: linear-gradient(45deg, #3b82f6, #60a5fa, #93c5fd);
             background-size: 200% 200%;
-            animation: breeze 3s linear infinite;
-            pointer-events:none;
-        }
-        @keyframes breeze {
-            0% { background-position: 0% 0%; }
-            100% { background-position: -200% 0%; }
-        }
-
-        .device-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0,1fr));
-            gap: 12px;
-            margin-top: 14px;
-        }
-        @media (max-width: 720px) {
-            .device-grid { grid-template-columns: minmax(0,1fr); }
-        }
-        .device-card {
-            position: relative;
-            border-radius: 18px;
-            padding: 10px 12px;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            overflow: hidden;
-        }
-
-        /* apă care curge */
-        #pump-card.pump-flow::before {
-            content:"";
-            position:absolute;
-            inset:0;
-            background: linear-gradient(
-                180deg,
-                rgba(59,130,246,0.25),
-                rgba(59,130,246,0.06),
-                rgba(59,130,246,0.25)
-            );
-            background-size: 100% 200%;
-            opacity:0.45;
-            animation: waterFlow 3s linear infinite;
-            pointer-events:none;
+            z-index: 1;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            transition: height 0.4s ease-out;
+            /* Animatia de "flow" */
+            animation: waterFlow 4s ease-in-out infinite alternate;
         }
         @keyframes waterFlow {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 0% 200%; }
+            0%   { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
         }
 
-        /* căldură portocalie */
-        #heat-card.heat-warm {
-            background: radial-gradient(circle at 0% 0%, rgba(253,186,116,0.22), #fefce8 45%, #f9fafb 100%);
-            border-color: rgba(248,171,89,0.8);
-            box-shadow: 0 14px 40px rgba(248,171,89,0.6);
-        }
-
-        .device-title {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-        .device-main {
-            font-size: 17px;
-            font-weight: 600;
-        }
-        .device-sub {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        /* toggle lampă/pompă */
-        .toggle {
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-            padding:3px 8px;
-            border-radius:999px;
-            border:1px solid #e5e7eb;
-            background:#f9fafb;
-            cursor:pointer;
-            font-size:11px;
-            color:var(--text-muted);
-            user-select:none;
-        }
-        .toggle-thumb {
-            width:18px;
-            height:18px;
-            border-radius:999px;
-            background:#e5e7eb;
-            transition:background 0.15s ease, transform 0.15s ease;
-        }
-        .toggle.on {
-            background:#dcfce7;
-            border-color:#a7f3d0;
-            color:#166534;
-        }
-        .toggle.on .toggle-thumb {
-            background:#22c55e;
-            transform:translateX(2px);
-        }
-
-        /* culori lampă: mov / albastru / roșu */
-        .lamp-colors {
-            display:flex;
-            gap:8px;
-            margin-top:7px;
-            align-items:center;
-            font-size:11px;
-            color:var(--text-muted);
-        }
-        .lamp-dot {
-            width:18px;
-            height:18px;
-            border-radius:999px;
-            border:2px solid transparent;
-            padding:0;
-            cursor:pointer;
-            box-shadow:0 4px 8px rgba(15,23,42,0.3);
-        }
-        .lamp-dot.active {
-            border-color:#0f172a;
-        }
-
-        /* container manual ascuns până apeși MANUAL */
-        #device-controls {
-            margin-top: 10px;
-            display: none;
-        }
-        #device-controls.visible {
-            display: block;
-        }
-
-        .footer-line {
-            margin-top: 6px;
-            font-size: 12px;
-            color: rgba(15,23,42,0.7);
-            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
-        }
     </style>
 </head>
 <body>
-<!-- SPLASH -->
-<div id="splash">
-    <div class="splash-inner">
-        <div class="splash-logo">
-            <img src="green-house-logo.png" alt="Green House">
-        </div>
-        <div class="splash-title">Hi, welcome 👋</div>
-        <div class="splash-sub">You are entering your automated greenhouse</div>
-    </div>
-</div>
 
-<div class="screen">
-    <div class="top-bar">
-        <div class="top-left">
-            <div class="top-logo">
-                <img src="green-house-logo.png" alt="Green House Logo">
+    <div id="splash">
+        <div class="splash-inner">
+            <div class="splash-logo">
+                <img src="green-house-logo.png" alt="Greenhouse Logo">
             </div>
-            <div class="top-text">
-                <div class="location-label">Greenhouse</div>
-                <div class="location-name" id="loc-name">Automated Greenhouse</div>
-            </div>
-        </div>
-        <div class="top-right">
-            <div id="top-date">--</div>
-            <div id="top-time">--:--</div>
+            <div class="splash-title">Smart Greenhouse</div>
+            <div class="splash-sub">Se conectează la broker...</div>
         </div>
     </div>
 
-    <div style="margin-bottom: 12px;">
-        <span class="pill" id="status-pill">
-            <span class="pill-dot"></span>
-            <span id="status-text">Connecting...</span>
-        </span>
+    <div class="screen">
+
+        <div class="top-bar">
+            <div class="top-left">
+                <div class="top-logo">
+                    <img src="green-house-logo.png" alt="Logo">
+                </div>
+                <div class="top-text">
+                    <div class="location-label">Locație</div>
+                    <div class="location-name">Sera 1</div>
+                </div>
+            </div>
+            <div class="top-right">
+                <div id="connection-status" class="pill disconnected">
+                    <div class="pill-dot"></div>
+                    <span id="status-text">DECONECTAT</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab-item active" data-tab="principal">🌱 Tabul Principal</div>
+            <div class="tab-item" data-tab="setari">⚙️ Setări</div>
+        </div>
+
+        <div class="mode-switcher">
+            <button id="btn-auto" class="mode-btn active" onclick="setMode('auto')">MOD AUTO</button>
+            <button id="btn-manual" class="mode-btn" onclick="setMode('manual')">MOD MANUAL</button>
+        </div>
+
+        <div class="tabs-content">
+            <div id="tab-principal" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Starea Curentă</div>
+                    </div>
+                    <div class="sensors-grid">
+                        <div class="sensor-item">
+                            <div class="sensor-label"><span class="sensor-icon">🌡️</span>Temp. Aer</div>
+                            <div class="sensor-value" id="val-temp-aer">--<sup>°C</sup></div>
+                        </div>
+                        <div class="sensor-item">
+                            <div class="sensor-label"><span class="sensor-icon">💧</span>Umid. Aer</div>
+                            <div class="sensor-value" id="val-umid-aer">--<sup>%</sup></div>
+                        </div>
+                        <div class="sensor-item">
+                            <div class="sensor-label"><span class="sensor-icon">🌱</span>Umid. Sol</div>
+                            <div class="sensor-value" id="val-umid-sol">--<sup>%</sup></div>
+                        </div>
+                        <div class="sensor-item">
+                            <div class="sensor-label"><span class="sensor-icon">☀️</span>Lumină</div>
+                            <div class="sensor-value" id="val-lumina">--<sup>lx</sup></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-setari" class="tab-content">
+                <div class="card">
+                    <div class="card-title">Setări Conexiune</div>
+                    <p>Aici vor fi setările pentru broker-ul MQTT, etc.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="manual-controls" id="manual-controls-grid">
+            
+            <div class="control-card" id="control-fan">
+                <div class="control-header">
+                    <div class="control-label">Viteză Ventilator</div>
+                </div>
+                <div class="control-body">
+                    <div class="fan-icon-wrapper">
+                        <div class="fan-icon" id="fan-icon-css">
+                            <div class="blade blade1"></div>
+                            <div class="blade blade2"></div>
+                            <div class="blade blade3"></div>
+                            <div class="blade blade4"></div>
+                        </div>
+                    </div>
+                    <div class="control-value" id="fan-val-text">0<sup>%</sup></div>
+                </div>
+                <input type="range" min="0" max="100" value="0" class="slider" id="slider-fan">
+            </div>
+
+            <div class="control-card control-lamp" id="control-heat">
+                <div class="lamp-glow" id="lamp-glow-effect"></div>
+                <div class="control-header">
+                    <div class="control-label">Intensitate Căldură</div>
+                    <div class="control-icon">🔥</div>
+                </div>
+                <div class="control-body">
+                    <div class="control-value" id="heat-val-text">0<sup>%</sup></div>
+                </div>
+                <input type="range" min="0" max="100" value="0" class="slider" id="slider-heat">
+            </div>
+
+            <div class="control-card control-extra" id="control-extra">
+                <div class="control-header">
+                    <div class="control-label">Lumină Extra</div>
+                    <div class="control-icon">💡</div>
+                </div>
+                <div class="control-body">
+                    <div class="control-value" id="extra-val-text">0<sup>%</sup></div>
+                </div>
+                <input type="range" min="0" max="100" value="0" class="slider" id="slider-extra">
+            </div>
+
+            <div class="control-card control-water" id="control-water">
+                <div class="water-fill" id="water-fill-effect"></div>
+                <div class="control-header">
+                    <div class="control-label">Pompă Apă</div>
+                    <div class="control-icon">🌊</div>
+                </div>
+                <div class="control-body">
+                    <div class="control-value" id="water-val-text">0<sup>%</sup></div>
+                </div>
+                <input type="range" min="0" max="100" value="0" class="slider" id="slider-water">
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- OVERVIEW -->
-    <div class="card">
-        <div class="card-header">
-            <div>
-                <div class="card-title">Overview</div>
-                <div class="card-subtitle">Indoor greenhouse</div>
-            </div>
-            <div class="chip">
-                <span class="chip-dot"></span>
-                <span id="mode-chip">--</span>
-            </div>
-        </div>
-        <div class="temp-row">
-            <div class="temp-main" id="temp-main">--<span>°C</span></div>
-            <div class="temp-extra">
-                <span>Air / soil humidity</span>
-                <span id="humid-line">-- % / -- %</span>
-                <span id="light-line">Light: -- lx</span>
-            </div>
-        </div>
-        <div class="health-row">
-            <div class="health-left">
-                <div class="health-label">Overall crop health</div>
-                <div class="health-value" id="health-value">--%</div>
-                <div class="health-badge" id="health-badge">Calculating...</div>
-            </div>
-            <div class="health-bar">
-                <div class="health-bar-fill" id="health-bar-fill"></div>
-            </div>
-        </div>
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="metric-label">Temperature</div>
-                <div class="metric-value">
-                    <span id="metric-temp">--</span>
-                    <span class="metric-unit">°C</span>
-                </div>
-                <div class="metric-tag" id="metric-temp-tag">--</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-label">Light</div>
-                <div class="metric-value">
-                    <span id="metric-light">--</span>
-                    <span class="metric-unit">lx</span>
-                </div>
-                <div class="metric-tag" id="metric-light-tag">--</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-label">Soil moisture</div>
-                <div class="metric-value">
-                    <span id="metric-soil">--</span>
-                    <span class="metric-unit">%</span>
-                </div>
-                <div class="metric-tag" id="metric-soil-tag">--</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-label">Water level</div>
-                <div class="metric-value">
-                    <span id="metric-water">--</span>
-                    <span class="metric-unit">%</span>
-                </div>
-                <div class="metric-tag" id="metric-water-tag">--</div>
-            </div>
-        </div>
-    </div>
+    <script>
+        // Configurare MQTT (DEMO - ajusteaza cu datele tale)
+        const brokerHost = "test.mosquitto.org";
+        const brokerPort = 8081; // Port WebSocket
+        const clientId = "greenhouse-ui-" + Math.random().toString(16).substr(2, 8);
 
-    <!-- CONTROL -->
-    <div class="card">
-        <div class="mode-row">
-            <div class="mode-labels">
-                <span id="label-auto" class="active">Auto</span>
-                <span id="label-manual" class="inactive">Manual</span>
-            </div>
-            <div style="font-size:12px;color:var(--text-muted);">
-                Control mode
-            </div>
-        </div>
+        // Topice
+        const TOPIC_STATUS = "greenhouse/status";
+        const TOPIC_SENSORS = "greenhouse/sensors";
+        const TOPIC_MODE = "greenhouse/control/mode";
+        const TOPIC_CMD_FAN = "greenhouse/control/fan";
+        const TOPIC_CMD_HEAT = "greenhouse/control/heat";
+        const TOPIC_CMD_EXTRA = "greenhouse/control/extra";
+        const TOPIC_CMD_WATER = "greenhouse/control/water";
 
-        <!-- FAN -->
-        <div id="fan-card">
-            <div class="fan-slider-row">
-                <div class="fan-value-row">
-                    <div>Fan speed</div>
-                    <div class="fan-value-main" id="fan-value">0%</div>
-                </div>
-                <input type="range" id="fan-slider" min="0" max="100" value="0" disabled>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
-                    In auto mode, fan speed is controlled by the sensors.
-                </div>
-            </div>
-        </div>
+        let client;
+        let isManualMode = false;
+        let reconnectTimeout = 5000;
 
-        <!-- MANUAL CONTROLS (ascunse până apeși MANUAL) -->
-        <div id="device-controls">
-            <div class="device-grid">
-                <!-- LAMP -->
-                <div class="device-card" id="lamp-card">
-                    <div class="device-title">Lamp</div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                        <div class="device-main" id="lamp-main">Off</div>
-                        <button type="button" class="toggle" id="lamp-toggle">
-                            <div class="toggle-thumb"></div>
-                            <span id="lamp-toggle-label">Off</span>
-                        </button>
-                    </div>
-                    <div class="fan-value-row" style="margin-bottom:4px;">
-                        <div>Intensity</div>
-                        <div class="fan-value-main" id="lamp-value" style="font-size:15px;">0%</div>
-                    </div>
-                    <input type="range" id="lamp-slider" min="0" max="100" value="0">
-                    <div class="lamp-colors">
-                        <span>Color</span>
-                        <button type="button" class="lamp-dot active" data-color="#a855f7" style="background:#a855f7;"></button>
-                        <button type="button" class="lamp-dot" data-color="#3b82f6" style="background:#3b82f6;"></button>
-                        <button type="button" class="lamp-dot" data-color="#ef4444" style="background:#ef4444;"></button>
-                    </div>
-                </div>
+        // --- Functii UI de Baza ---
+        
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab-item');
+            const contents = document.querySelectorAll('.tab-content');
 
-                <!-- PUMP -->
-                <div class="device-card" id="pump-card">
-                    <div class="device-title">Water pump</div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;position:relative;z-index:1;">
-                        <div class="device-main" id="pump-main">Off</div>
-                        <button type="button" class="toggle" id="pump-toggle">
-                            <div class="toggle-thumb"></div>
-                            <span id="pump-toggle-label">Off</span>
-                        </button>
-                    </div>
-                    <div class="fan-value-row" style="margin-bottom:4px;position:relative;z-index:1;">
-                        <div>Flow</div>
-                        <div class="fan-value-main" id="pump-value" style="font-size:15px;">0%</div>
-                    </div>
-                    <input type="range" id="pump-slider" min="0" max="100" value="0" style="position:relative;z-index:1;">
-                </div>
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Doar daca nu e deja activ
+                    if (tab.classList.contains('active')) return;
 
-                <!-- HEAT -->
-                <div class="device-card" id="heat-card">
-                    <div class="device-title">Heat</div>
-                    <div class="fan-value-row" style="margin-bottom:4px;">
-                        <div>Intensity</div>
-                        <div class="fan-value-main" id="heat-value" style="font-size:15px;">0%</div>
-                    </div>
-                    <input type="range" id="heat-slider" min="0" max="100" value="0">
-                    <div class="device-sub" style="margin-top:6px;">
-                        High values will warm up the greenhouse.
-                    </div>
-                </div>
+                    // Scoate active de la toate
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
 
-                <!-- EXTRA SLOT -->
-                <div class="device-card">
-                    <div class="device-title">Extra</div>
-                    <div class="device-main" style="font-size:15px;">Reserved for future module</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer-line">
-        Device IP: <span id="ip-label">--</span> · Last update: <span id="last-update">--</span>
-    </div>
-</div>
-
-<script>
-    // MQTT
-    const MQTT_HOST = "broker.emqx.io";
-    const MQTT_PORT = 8084;
-    const MQTT_USER = "";
-    const MQTT_PASS = "";
-    const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8);
-
-    const TOPIC_CMD_FAN        = "sera/comenzi/ventilator";
-    const TOPIC_CMD_MODE       = "sera/comenzi/mod";
-    const TOPIC_STAT_SENZORI   = "sera/stare/senzori";
-
-    const TOPIC_CMD_LAMP_POWER  = "sera/comenzi/lampa/power";
-    const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/bright";
-    const TOPIC_CMD_LAMP_COLOR  = "sera/comenzi/lampa/color";
-
-    const TOPIC_CMD_PUMP_POWER  = "sera/comenzi/pompa/power";
-    const TOPIC_CMD_PUMP_SPEED  = "sera/comenzi/pompa/speed";
-
-    const TOPIC_CMD_HEAT_LEVEL  = "sera/comenzi/incalzire/level";
-
-    let isManualMode = false;
-    let currentLampColor = "#a855f7";
-
-    const allElements = {
-        labelAuto: document.getElementById("label-auto"),
-        labelManual: document.getElementById("label-manual"),
-        fanSlider: document.getElementById("fan-slider"),
-        fanValue: document.getElementById("fan-value"),
-        fanCard: document.getElementById("fan-card"),
-
-        tempMain: document.getElementById("temp-main"),
-        humidLine: document.getElementById("humid-line"),
-        lightLine: document.getElementById("light-line"),
-        metricTemp: document.getElementById("metric-temp"),
-        metricLight: document.getElementById("metric-light"),
-        metricSoil: document.getElementById("metric-soil"),
-        metricWater: document.getElementById("metric-water"),
-        metricTempTag: document.getElementById("metric-temp-tag"),
-        metricLightTag: document.getElementById("metric-light-tag"),
-        metricSoilTag: document.getElementById("metric-soil-tag"),
-        metricWaterTag: document.getElementById("metric-water-tag"),
-        healthValue: document.getElementById("health-value"),
-        healthBadge: document.getElementById("health-badge"),
-        healthBarFill: document.getElementById("health-bar-fill"),
-        modeChip: document.getElementById("mode-chip"),
-        ipLabel: document.getElementById("ip-label"),
-        lastUpdate: document.getElementById("last-update"),
-        topDate: document.getElementById("top-date"),
-        topTime: document.getElementById("top-time"),
-        statusPill: document.getElementById("status-pill"),
-        statusText: document.getElementById("status-text"),
-        deviceControls: document.getElementById("device-controls"),
-        splash: document.getElementById("splash"),
-
-        lampToggle: document.getElementById("lamp-toggle"),
-        lampToggleLabel: document.getElementById("lamp-toggle-label"),
-        lampMain: document.getElementById("lamp-main"),
-        lampSlider: document.getElementById("lamp-slider"),
-        lampValue: document.getElementById("lamp-value"),
-        lampDots: document.querySelectorAll(".lamp-dot"),
-        lampCard: document.getElementById("lamp-card"),
-
-        pumpToggle: document.getElementById("pump-toggle"),
-        pumpToggleLabel: document.getElementById("pump-toggle-label"),
-        pumpMain: document.getElementById("pump-main"),
-        pumpSlider: document.getElementById("pump-slider"),
-        pumpValue: document.getElementById("pump-value"),
-        pumpCard: document.getElementById("pump-card"),
-
-        heatSlider: document.getElementById("heat-slider"),
-        heatValue: document.getElementById("heat-value"),
-        heatCard: document.getElementById("heat-card")
-    };
-
-    const client = new Paho.MQTT.Client(MQTT_HOST, Number(MQTT_PORT), MQTT_CLIENT_ID);
-    client.onConnectionLost = onConnectionLost;
-    client.onMessageArrived = onMessageArrived;
-
-    function hideSplash() {
-        allElements.splash.classList.add("hide");
-    }
-    window.addEventListener("load", () => {
-        setTimeout(hideSplash, 1500);
-    });
-
-    function onConnect() {
-        client.subscribe(TOPIC_STAT_SENZORI);
-        allElements.statusText.textContent = "Live connected";
-        allElements.statusPill.classList.remove("disconnected");
-    }
-
-    function onConnectionLost(res) {
-        if (res.errorCode !== 0) {
-            allElements.statusText.textContent = "Disconnected";
-            allElements.statusPill.classList.add("disconnected");
-            setTimeout(startConnect, 3000);
+                    // Adauga active la cel click-uit
+                    tab.classList.add('active');
+                    const targetContent = document.getElementById(tab.dataset.tab);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
         }
-    }
+        
+        // NOUA Functie pentru setarea modului Auto/Manual
+        function setMode(mode) {
+            const tabsContent = document.querySelector('.tabs-content');
+            const manualControls = document.getElementById('manual-controls-grid');
+            const btnAuto = document.getElementById('btn-auto');
+            const btnManual = document.getElementById('btn-manual');
 
-    function updateClock() {
-        const d = new Date();
-        allElements.topDate.textContent = d.toLocaleDateString("en-GB", {
-            weekday:"short", day:"2-digit", month:"short", year:"numeric"
-        });
-        allElements.topTime.textContent = d.toLocaleTimeString("en-GB", {
-            hour:"2-digit", minute:"2-digit"
-        });
-    }
+            if (mode === 'auto') {
+                isManualMode = false;
+                tabsContent.style.display = 'block';
+                manualControls.style.display = 'none';
+                btnAuto.classList.add('active');
+                btnManual.classList.remove('active');
+                // Trimite comanda MQTT
+                publishMessage(TOPIC_MODE, "AUTO");
 
-    function labelForTemp(t) {
-        if (t >= 20 && t <= 28) return {txt:"Optimal", cls:"good"};
-        if (t < 18) return {txt:"Too cold", cls:"bad"};
-        return {txt:"Too hot", cls:"bad"};
-    }
-    function labelForSoil(s) {
-        if (s >= 40 && s <= 80) return {txt:"Moist", cls:"good"};
-        if (s < 40) return {txt:"Dry", cls:"bad"};
-        return {txt:"Too wet", cls:"bad"};
-    }
-    function labelForWater(w) {
-        if (w >= 40 && w <= 90) return {txt:"OK", cls:"good"};
-        if (w < 40) return {txt:"Low", cls:"bad"};
-        return {txt:"OK", cls:"good"};
-    }
-    function labelForLight(lx) {
-        if (lx < 200) return {txt:"Low", cls:"bad"};
-        if (lx < 800) return {txt:"Medium", cls:"good"};
-        return {txt:"High", cls:"good"};
-    }
-    function healthFromSensors(temp, soil, water) {
-        let score = 100;
-        if (temp < 18 || temp > 30) score -= 25;
-        if (soil < 30 || soil > 80) score -= 25;
-        if (water < 30 || water > 90) score -= 20;
-        score = Math.max(0, Math.min(100, score));
-        return score;
-    }
-
-    function updateSliderFill(slider, colorOverride) {
-        const min = slider.min ? Number(slider.min) : 0;
-        const max = slider.max ? Number(slider.max) : 100;
-        const val = ((Number(slider.value) - min) * 100) / (max - min);
-        const c = colorOverride || "var(--accent)";
-        slider.style.background =
-            `linear-gradient(90deg, ${c} 0%, ${c} ${val}%, #e5e7eb ${val}%, #e5e7eb 100%)`;
-    }
-
-    function onMessageArrived(message) {
-        try {
-            const data = JSON.parse(message.payloadString);
-
-            const t = data.temp;
-            const light = data.light;
-            const soil = data.soil;
-            const water = data.water;
-
-            allElements.tempMain.innerHTML = `${t.toFixed(1)}<span>°C</span>`;
-            allElements.humidLine.textContent = `-- % / ${soil.toFixed(0)} %`;
-            allElements.lightLine.textContent = `Light: ${light} lx`;
-            allElements.metricTemp.textContent  = t.toFixed(1);
-            allElements.metricLight.textContent = light;
-            allElements.metricSoil.textContent  = soil.toFixed(0);
-            allElements.metricWater.textContent = water.toFixed(0);
-
-            const lt = labelForTemp(t);
-            allElements.metricTempTag.textContent  = lt.txt;
-            allElements.metricTempTag.className    = "metric-tag " + lt.cls;
-
-            const ls = labelForSoil(soil);
-            allElements.metricSoilTag.textContent  = ls.txt;
-            allElements.metricSoilTag.className    = "metric-tag " + ls.cls;
-
-            const lw = labelForWater(water);
-            allElements.metricWaterTag.textContent = lw.txt;
-            allElements.metricWaterTag.className   = "metric-tag " + lw.cls;
-
-            const ll = labelForLight(light);
-            allElements.metricLightTag.textContent = ll.txt;
-            allElements.metricLightTag.className   = "metric-tag " + ll.cls;
-
-            const health = healthFromSensors(t, soil, water);
-            allElements.healthValue.textContent = `${health}%`;
-            allElements.healthBarFill.style.width = `${health}%`;
-            if (health >= 80) allElements.healthBadge.textContent = "Very good";
-            else if (health >= 60) allElements.healthBadge.textContent = "OK";
-            else allElements.healthBadge.textContent = "Attention";
-
-            const manualFromDevice = data.mode === "manual";
-            setModeUI(manualFromDevice, false);
-
-            if (typeof data.fan_pct === "number" && document.activeElement !== allElements.fanSlider) {
-                allElements.fanSlider.value = data.fan_pct;
-                allElements.fanValue.textContent = `${data.fan_pct}%`;
-                updateSliderFill(allElements.fanSlider);
-                updateFanCardVisual();
-            }
-
-            if (data.ip) allElements.ipLabel.textContent = data.ip;
-            const now = new Date();
-            allElements.lastUpdate.textContent =
-                now.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
-
-            hideSplash();
-        } catch (e) {
-            console.error("JSON parse error:", e);
-        }
-    }
-
-    function startConnect() {
-        allElements.statusText.textContent = "Connecting...";
-        allElements.statusPill.classList.add("disconnected");
-        client.connect({
-            onSuccess: onConnect,
-            useSSL: true,
-            userName: MQTT_USER,
-            password: MQTT_PASS,
-            onFailure: () => {
-                allElements.statusText.textContent = "Error";
-                setTimeout(startConnect, 5000);
-            }
-        });
-    }
-
-    function publishMessage(topic, payload) {
-        if (!client.isConnected()) return;
-        const m = new Paho.MQTT.Message(payload.toString());
-        m.destinationName = topic;
-        client.send(m);
-    }
-
-    function setModeUI(manual, publish) {
-        isManualMode = manual;
-
-        if (manual) {
-            allElements.labelManual.className = "active";
-            allElements.labelAuto.className   = "inactive";
-            allElements.modeChip.textContent  = "MANUAL";
-            allElements.fanSlider.disabled    = false;
-            allElements.deviceControls.classList.add("visible");
-        } else {
-            allElements.labelManual.className = "inactive";
-            allElements.labelAuto.className   = "active";
-            allElements.modeChip.textContent  = "AUTO";
-            allElements.fanSlider.disabled    = true;
-            allElements.deviceControls.classList.remove("visible");
-        }
-        updateSliderFill(allElements.fanSlider);
-        updateFanCardVisual();
-
-        if (publish) {
-            publishMessage(TOPIC_CMD_MODE, manual ? "manual" : "auto");
-            if (manual) {
-                publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
+            } else if (mode === 'manual') {
+                isManualMode = true;
+                tabsContent.style.display = 'none';
+                manualControls.style.display = 'grid'; // Sau 'grid'
+                btnAuto.classList.remove('active');
+                btnManual.classList.add('active');
+                // Trimite comanda MQTT
+                publishMessage(TOPIC_MODE, "MANUAL");
             }
         }
-    }
 
-    // FAN
-    function updateFanCardVisual() {
-        const val = Number(allElements.fanSlider.value);
-        if (isManualMode && val > 0) {
-            allElements.fanCard.classList.add("fan-breeze");
-        } else {
-            allElements.fanCard.classList.remove("fan-breeze");
+        function updateConnectionStatus(connected, message = "") {
+            const statusPill = document.getElementById('connection-status');
+            const statusText = document.getElementById('status-text');
+            const splashScreen = document.getElementById('splash');
+
+            if (connected) {
+                statusPill.classList.remove('disconnected');
+                statusText.innerText = "CONECTAT";
+                
+                // Ascunde splash screen-ul dupa o mica intarziere
+                setTimeout(() => {
+                    splashScreen.classList.add('hide');
+                }, 800);
+            } else {
+                statusPill.classList.add('disconnected');
+                statusText.innerText = message || "DECONECTAT";
+                // Arata splash screen-ul daca pica conexiunea
+                if (!splashScreen.classList.contains('hide')) {
+                     document.querySelector('.splash-sub').innerText = message;
+                }
+            }
         }
-    }
+        
+        // --- Functii UI pentru Controale Manuale ---
 
-    allElements.labelAuto.addEventListener("click", () => setModeUI(false, true));
-    allElements.labelManual.addEventListener("click", () => setModeUI(true, true));
+        // 1. FAN (Ventilator)
+        function updateFanUI(value) {
+            const text = document.getElementById('fan-val-text');
+            const icon = document.getElementById('fan-icon-css');
+            text.innerHTML = `${value}<sup>%</sup>`;
 
-    allElements.fanSlider.addEventListener("input", () => {
-        allElements.fanValue.textContent = `${allElements.fanSlider.value}%`;
-        updateSliderFill(allElements.fanSlider);
-        updateFanCardVisual();
-    });
-    allElements.fanSlider.addEventListener("change", () => {
-        if (isManualMode) publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
-    });
+            if (value > 0) {
+                icon.classList.add('spinning');
+                // Viteza creste (durata animatiei scade)
+                // 3s la viteza minima (1), 0.3s la viteza maxima (100)
+                let duration = 3.3 - (value / 100 * 3); 
+                icon.style.animationDuration = `${duration}s`;
+            } else {
+                icon.classList.remove('spinning');
+            }
+        }
 
-    // LAMP
-    allElements.lampToggle.addEventListener("click", () => {
-        const on = !allElements.lampToggle.classList.contains("on");
-        allElements.lampToggle.classList.toggle("on", on);
-        const label = on ? "On" : "Off";
-        allElements.lampToggleLabel.textContent = label;
-        allElements.lampMain.textContent = label;
-        publishMessage(TOPIC_CMD_LAMP_POWER, on ? "on" : "off");
-        allElements.lampCard.style.boxShadow = on
-            ? "0 16px 32px rgba(148,163,253,0.5)"
-            : "0 10px 24px rgba(15,23,42,0.12)";
-    });
+        // 2. HEAT (Caldura) - Functie Modificata
+        function updateHeatUI(value) {
+            const text = document.getElementById('heat-val-text');
+            const glow = document.getElementById('lamp-glow-effect');
+            text.innerHTML = `${value}<sup>%</sup>`;
 
-    allElements.lampSlider.addEventListener("input", () => {
-        allElements.lampValue.textContent = `${allElements.lampSlider.value}%`;
-        updateSliderFill(allElements.lampSlider, currentLampColor);
-    });
-    allElements.lampSlider.addEventListener("change", () => {
-        publishMessage(TOPIC_CMD_LAMP_BRIGHT, allElements.lampSlider.value);
-    });
+            if (value > 0) {
+                // Calcule progresive
+                let opacity = 0.1 + (value / 100 * 0.6); // 0.1 -> 0.7
+                let blur = 10 + (value * 0.7);        // 10px -> 80px
+                let spread = 4 + (value * 0.2);         // 4px -> 24px
+                
+                // Seteaza umbra progresiv
+                glow.style.boxShadow = `0 0 ${blur}px ${spread}px rgba(251, 191, 36, ${opacity})`;
+            } else {
+                glow.style.boxShadow = 'none';
+            }
+        }
 
-    allElements.lampDots.forEach(btn => {
-        btn.addEventListener("click", () => {
-            allElements.lampDots.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            currentLampColor = btn.dataset.color;
-            updateSliderFill(allElements.lampSlider, currentLampColor);
-            allElements.lampCard.style.background =
-                `radial-gradient(circle at 0% 0%, ${currentLampColor}22, #f9fafb 55%, #f9fafb 100%)`;
-            publishMessage(TOPIC_CMD_LAMP_COLOR, currentLampColor);
+        // 3. EXTRA
+        function updateExtraUI(value) {
+            document.getElementById('extra-val-text').innerHTML = `${value}<sup>%</sup>`;
+            // Aici poti adauga si alte efecte vizuale
+        }
+
+        // 4. WATER (Apa) - Functie Modificata
+        function updateWaterUI(value) {
+            const text = document.getElementById('water-val-text');
+            const fill = document.getElementById('water-fill-effect');
+            text.innerHTML = `${value}<sup>%</sup>`;
+            
+            // Seteaza inaltimea elementului de "umplere"
+            fill.style.height = `${value}%`;
+        }
+
+        // --- Initializare Controale Manuale (Sliders) ---
+        function setupManualControls() {
+            const fanSlider = document.getElementById('slider-fan');
+            const heatSlider = document.getElementById('slider-heat');
+            const extraSlider = document.getElementById('slider-extra');
+            const waterSlider = document.getElementById('slider-water');
+
+            fanSlider.addEventListener('input', (e) => updateFanUI(e.target.value));
+            heatSlider.addEventListener('input', (e) => updateHeatUI(e.target.value));
+            extraSlider.addEventListener('input', (e) => updateExtraUI(e.target.value));
+            waterSlider.addEventListener('input', (e) => updateWaterUI(e.target.value));
+
+            // Adaugam 'change' pentru a trimite comanda MQTT doar la final
+            fanSlider.addEventListener('change', (e) => publishMessage(TOPIC_CMD_FAN, e.target.value));
+            heatSlider.addEventListener('change', (e) => publishMessage(TOPIC_CMD_HEAT, e.target.value));
+            extraSlider.addEventListener('change', (e) => publishMessage(TOPIC_CMD_EXTRA, e.target.value));
+            waterSlider.addEventListener('change', (e) => publishMessage(TOPIC_CMD_WATER, e.target.value));
+        }
+
+        // --- Logica MQTT ---
+        
+        function connectMQTT() {
+            try {
+                client = new Paho.MQTT.Client(brokerHost, brokerPort, clientId);
+
+                // Setare callbacks
+                client.onConnectionLost = onConnectionLost;
+                client.onMessageArrived = onMessageArrived;
+
+                // Conectare
+                client.connect({
+                    onSuccess: onConnect,
+                    onFailure: onFailure,
+                    useSSL: true, // Portul 8081 e de obicei WSS (WebSocket Secure)
+                    cleanSession: true,
+                    timeout: 10
+                });
+            } catch (error) {
+                console.error("Eroare initializare MQTT:", error);
+                updateConnectionStatus(false, "Eroare client");
+                setTimeout(connectMQTT, reconnectTimeout);
+            }
+        }
+
+        function onConnect() {
+            console.log("Conectat la MQTT Broker!");
+            updateConnectionStatus(true);
+            
+            // Subscrie la topice
+            client.subscribe(TOPIC_STATUS);
+            client.subscribe(TOPIC_SENSORS);
+            // Daca vrei ca UI-ul sa reflecte si starea din spate (ex. alt user schimba)
+            // client.subscribe(TOPIC_MODE);
+            // client.subscribe(TOPIC_CMD_FAN); 
+            // ... etc
+        }
+
+        function onFailure(response) {
+            console.log("Conectare esuata: " + response.errorMessage);
+            updateConnectionStatus(false, "Conexiune esuata");
+            setTimeout(connectMQTT, reconnectTimeout);
+        }
+
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.log("Conexiune pierduta: " + responseObject.errorMessage);
+                updateConnectionStatus(false, "Conexiune pierduta");
+                setTimeout(connectMQTT, reconnectTimeout);
+            }
+        }
+
+        function onMessageArrived(message) {
+            const topic = message.destinationName;
+            const payload = message.payloadString;
+            console.log("Mesaj primit: ", topic, payload);
+
+            try {
+                if (topic === TOPIC_SENSORS) {
+                    const data = JSON.parse(payload);
+                    document.getElementById('val-temp-aer').innerHTML = `${data.temp_aer?.toFixed(1) || '--'}<sup>°C</sup>`;
+                    document.getElementById('val-umid-aer').innerHTML = `${data.umid_aer?.toFixed(0) || '--'}<sup>%</sup>`;
+                    document.getElementById('val-umid-sol').innerHTML = `${data.umid_sol?.toFixed(0) || '--'}<sup>%</sup>`;
+                    document.getElementById('val-lumina').innerHTML = `${data.lumina || '--'}<sup>lx</sup>`;
+                }
+                
+                if (topic === TOPIC_STATUS && payload === "OFFLINE") {
+                     updateConnectionStatus(false, "Sera OFFLINE");
+                }
+                
+                // Aici poti adauga logica si pentru a updata sliderele
+                // daca primesti mesaje pe topicele de comanda (daca nu e in mod manual)
+                // if (topic === TOPIC_CMD_FAN && !isManualMode) { ... }
+
+            } catch (error) {
+                console.error("Eroare la procesarea mesajului:", error);
+            }
+        }
+
+        function publishMessage(topic, payload) {
+            if (!client || !client.isConnected()) {
+                console.warn("Nu se poate publica, clientul nu e conectat.");
+                return;
+            }
+            try {
+                const message = new Paho.MQTT.Message(payload);
+                message.destinationName = topic;
+                message.qos = 0; // Quality of Service
+                message.retained = false;
+                client.send(message);
+                console.log(`Mesaj publicat: ${topic} -> ${payload}`);
+            } catch (error) {
+                console.error("Eroare la publicare:", error);
+            }
+        }
+
+        // --- Initializare Aplicatie ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupTabs();
+            setupManualControls();
+            setMode('auto'); // Seteaza modul initial ca AUTO
+            connectMQTT();
         });
-    });
-
-    // PUMP
-    allElements.pumpToggle.addEventListener("click", () => {
-        const on = !allElements.pumpToggle.classList.contains("on");
-        allElements.pumpToggle.classList.toggle("on", on);
-        const label = on ? "On" : "Off";
-        allElements.pumpToggleLabel.textContent = label;
-        allElements.pumpMain.textContent = label;
-        publishMessage(TOPIC_CMD_PUMP_POWER, on ? "on" : "off");
-    });
-    allElements.pumpSlider.addEventListener("input", () => {
-        allElements.pumpValue.textContent = `${allElements.pumpSlider.value}%`;
-        updateSliderFill(allElements.pumpSlider, "#3b82f6");
-        const val = Number(allElements.pumpSlider.value);
-        if (val > 0) allElements.pumpCard.classList.add("pump-flow");
-        else allElements.pumpCard.classList.remove("pump-flow");
-    });
-    allElements.pumpSlider.addEventListener("change", () => {
-        publishMessage(TOPIC_CMD_PUMP_SPEED, allElements.pumpSlider.value);
-    });
-
-    // HEAT
-    allElements.heatSlider.addEventListener("input", () => {
-        allElements.heatValue.textContent = `${allElements.heatSlider.value}%`;
-        updateSliderFill(allElements.heatSlider, "#f97316");
-        const val = Number(allElements.heatSlider.value);
-        if (val >= 40) allElements.heatCard.classList.add("heat-warm");
-        else allElements.heatCard.classList.remove("heat-warm");
-    });
-    allElements.heatSlider.addEventListener("change", () => {
-        publishMessage(TOPIC_CMD_HEAT_LEVEL, allElements.heatSlider.value);
-    });
-
-    // INIT
-    [allElements.fanSlider, allElements.lampSlider,
-     allElements.pumpSlider, allElements.heatSlider].forEach(s => updateSliderFill(s));
-
-    setInterval(updateClock, 1000);
-    updateClock();
-    startConnect();
-</script>
+    </script>
 </body>
 </html>
