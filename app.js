@@ -23,7 +23,7 @@ const TOPIC_CMD_HEAT_LEVEL  = "sera/comenzi/incalzire/level";
 let isManualMode     = false;
 let currentLampPower = 0;         // 0 = off, 1 = on
 let currentLampColor = "#a855f7"; // doar pentru efect vizual, generic
-
+let hasFirstStatus   = false;
 // =====================
 // DOM ELEMENTS
 // =====================
@@ -266,6 +266,9 @@ function onMessageArrived(message) {
             refreshLampCardBackground();
         }
 
+        // <<< AICI ADD LINEA >>>
+        hasFirstStatus = true;
+
         hideSplash();
     } catch (e) {
         console.error("JSON parse error:", e);
@@ -458,6 +461,7 @@ allElements.fanSlider.addEventListener("change", () => {
 
 // lamp toggle (folosește currentLampPower)
 allElements.lampToggle.addEventListener("click", () => {
+    if (!hasFirstStatus) return;
     const desired = currentLampPower === 1 ? 0 : 1;
     currentLampPower = desired;
 
@@ -474,6 +478,7 @@ allElements.lampToggle.addEventListener("click", () => {
 // lamp intensity – hold
 // lamp intensity – click = un „pas” (pulse) de ~350ms
 allElements.lampIntensityBtn.addEventListener("click", () => {
+    if (!hasFirstStatus) return;
     // mic efect vizual de glow
     allElements.lampIntensityBtn.classList.add("active-hold");
     setTimeout(() => {
@@ -486,6 +491,7 @@ allElements.lampIntensityBtn.addEventListener("click", () => {
 
 // lamp color – single click
 allElements.lampColorBtn.addEventListener("click", () => {
+    if (!hasFirstStatus) return;
     publishMessage(TOPIC_CMD_LAMP_COLOR, "cycle");
 
     // efect de puls scurt în jurul butonului
