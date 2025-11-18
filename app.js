@@ -481,8 +481,13 @@ setupHoldButton(
 // lamp color – single click
 allElements.lampColorBtn.addEventListener("click", () => {
     publishMessage(TOPIC_CMD_LAMP_COLOR, "cycle");
-});
 
+    // efect de puls scurt în jurul butonului
+    allElements.lampColorBtn.classList.add("pulse");
+    setTimeout(() => {
+        allElements.lampColorBtn.classList.remove("pulse");
+    }, 220);
+});
 // pump toggle
 allElements.pumpToggle.addEventListener("click", () => {
     const on = !allElements.pumpToggle.classList.contains("on");
