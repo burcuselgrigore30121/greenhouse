@@ -472,11 +472,17 @@ allElements.lampToggle.addEventListener("click", () => {
 });
 
 // lamp intensity – hold
-setupHoldButton(
-    allElements.lampIntensityBtn,
-    () => publishMessage(TOPIC_CMD_LAMP_BRIGHT, "start"),
-    () => publishMessage(TOPIC_CMD_LAMP_BRIGHT, "stop")
-);
+// lamp intensity – click = un „pas” (pulse) de ~350ms
+allElements.lampIntensityBtn.addEventListener("click", () => {
+    // mic efect vizual de glow
+    allElements.lampIntensityBtn.classList.add("active-hold");
+    setTimeout(() => {
+        allElements.lampIntensityBtn.classList.remove("active-hold");
+    }, 220);
+
+    // 350 = durata pulse-ului în ms, o poți schimba
+    publishMessage(TOPIC_CMD_LAMP_BRIGHT, "350");
+});
 
 // lamp color – single click
 allElements.lampColorBtn.addEventListener("click", () => {
