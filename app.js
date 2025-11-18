@@ -11,9 +11,9 @@ const TOPIC_CMD_FAN        = "sera/comenzi/ventilator";
 const TOPIC_CMD_MODE       = "sera/comenzi/mod";
 const TOPIC_STAT_SENZORI   = "sera/stare/senzori";
 
-const TOPIC_CMD_LAMP_POWER  = "sera/comenzi/lampa/power";     // ON/OFF
-const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/intensity"; // 0/1
-const TOPIC_CMD_LAMP_COLOR  = "sera/comenzi/lampa/color";     // hex
+const TOPIC_CMD_LAMP_POWER  = "sera/comenzi/lampa/power";     // "on" / "off"
+const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/intensity"; // "start" / "stop"
+const TOPIC_CMD_LAMP_COLOR  = "sera/comenzi/lampa/color";     // "cycle"
 
 const TOPIC_CMD_PUMP_POWER  = "sera/comenzi/pompa/power";
 const TOPIC_CMD_PUMP_SPEED  = "sera/comenzi/pompa/speed";
@@ -21,8 +21,8 @@ const TOPIC_CMD_PUMP_SPEED  = "sera/comenzi/pompa/speed";
 const TOPIC_CMD_HEAT_LEVEL  = "sera/comenzi/incalzire/level";
 
 let isManualMode     = false;
-let currentLampColor = "#a855f7"; // default mov
 let currentLampPower = 0;         // 0 = off, 1 = on
+let currentLampColor = "#a855f7"; // doar pentru efect vizual, generic
 
 // =====================
 // DOM ELEMENTS
@@ -68,9 +68,8 @@ const allElements = {
     lampToggle: document.getElementById("lamp-toggle"),
     lampToggleLabel: document.getElementById("lamp-toggle-label"),
     lampMain: document.getElementById("lamp-main"),
-    lampSlider: document.getElementById("lamp-slider"),
-    lampValue: document.getElementById("lamp-value"),
-    lampDots: document.querySelectorAll(".lamp-dot"),
+    lampIntensityBtn: document.getElementById("lamp-intensity-btn"),
+    lampColorBtn: document.getElementById("lamp-color-btn"),
     lampCard: document.getElementById("lamp-card"),
 
     // pump
@@ -254,7 +253,7 @@ function onMessageArrived(message) {
         allElements.lastUpdate.textContent =
             now.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
 
-        // --- LAMP STATE SYNC ---
+        // --- LAMP POWER SYNC ---
         if (typeof data.lamp_power === "number") {
             currentLampPower = data.lamp_power === 1 ? 1 : 0;
             const on = currentLampPower === 1;
@@ -264,30 +263,6 @@ function onMessageArrived(message) {
             allElements.lampToggleLabel.textContent = label;
             allElements.lampMain.textContent = label;
 
-            if (!on) {
-                allElements.lampCard.style.background = "#f9fafb";
-                allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
-            } else {
-                refreshLampCardBackground();
-            }
-        }
-
-        if (data.lamp_color) {
-            currentLampColor = data.lamp_color;
-            allElements.lampDots.forEach(btn => {
-                const active = btn.dataset.color.toLowerCase() === currentLampColor.toLowerCase();
-                btn.classList.toggle("active", active);
-            });
-            updateSliderFill(allElements.lampSlider, currentLampColor);
-            refreshLampCardBackground();
-        }
-
-        if (typeof data.lamp_intensity_step === "number") {
-            const step = data.lamp_intensity_step ? 1 : 0;
-            const snap = step === 0 ? 0 : 100;
-            allElements.lampSlider.value = snap;
-            allElements.lampValue.textContent = snap === 0 ? "Low" : "High";
-            updateSliderFill(allElements.lampSlider, currentLampColor);
             refreshLampCardBackground();
         }
 
@@ -374,9 +349,7 @@ function updateFanVisual() {
 // LAMP UI HELPER
 // =====================
 function refreshLampCardBackground() {
-    const v = Number(allElements.lampSlider.value);
     const on = currentLampPower === 1;
-
     if (!on) {
         allElements.lampCard.style.background = "#f9fafb";
         allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
@@ -392,8 +365,7 @@ function refreshLampCardBackground() {
         return;
     }
 
-    const r = v / 100;
-    const alpha = 0.18 + 0.40 * r;
+    const alpha = 0.32;
 
     allElements.lampCard.style.background =
         `radial-gradient(circle at 0% 0%, rgba(${rgb.r},${rgb.g},${rgb.b},${alpha}), #f9fafb 55%, #f9fafb 100%)`;
@@ -411,17 +383,12 @@ function resetManualControls() {
     updateSliderFill(allElements.fanSlider);
     updateFanVisual();
 
-    // LAMP (doar UI)
+    // LAMP (doar UI; starea reală vine din device)
+    currentLampPower = 0;
     allElements.lampToggle.classList.remove("on");
     allElements.lampToggleLabel.textContent = "Off";
     allElements.lampMain.textContent = "Off";
-    allElements.lampSlider.value = 0;
-    allElements.lampValue.textContent = "Low";
-    currentLampColor = "#a855f7";
-    updateSliderFill(allElements.lampSlider, currentLampColor);
-    allElements.lampDots.forEach(btn => btn.classList.remove("active"));
-    allElements.lampCard.style.background = "#f9fafb";
-    allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
+    refreshLampCardBackground();
 
     // PUMP
     allElements.pumpToggle.classList.remove("on");
@@ -438,6 +405,37 @@ function resetManualControls() {
     allElements.heatCard.style.background = "#f9fafb";
     allElements.heatCard.style.borderColor = "#e5e7eb";
     allElements.heatCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
+}
+
+// =====================
+// HELPER: buton cu press & hold
+// =====================
+function setupHoldButton(btn, onStart, onEnd) {
+    let isDown = false;
+
+    const start = (e) => {
+        e.preventDefault();
+        if (isDown) return;
+        isDown = true;
+        onStart();
+        btn.classList.add("active-hold");
+    };
+
+    const end = (e) => {
+        e && e.preventDefault();
+        if (!isDown) return;
+        isDown = false;
+        onEnd();
+        btn.classList.remove("active-hold");
+    };
+
+    btn.addEventListener("mousedown", start);
+    btn.addEventListener("mouseup", end);
+    btn.addEventListener("mouseleave", end);
+
+    btn.addEventListener("touchstart", start, {passive:false});
+    btn.addEventListener("touchend", end, {passive:false});
+    btn.addEventListener("touchcancel", end, {passive:false});
 }
 
 // =====================
@@ -458,7 +456,7 @@ allElements.fanSlider.addEventListener("change", () => {
     if (isManualMode) publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
 });
 
-// lamp toggle (folosește currentLampPower, nu clasa)
+// lamp toggle (folosește currentLampPower)
 allElements.lampToggle.addEventListener("click", () => {
     const desired = currentLampPower === 1 ? 0 : 1;
     currentLampPower = desired;
@@ -469,42 +467,20 @@ allElements.lampToggle.addEventListener("click", () => {
     allElements.lampToggleLabel.textContent = label;
     allElements.lampMain.textContent = label;
 
-    if (!on) {
-        allElements.lampCard.style.background = "#f9fafb";
-        allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
-    } else {
-        refreshLampCardBackground();
-    }
-
     publishMessage(TOPIC_CMD_LAMP_POWER, on ? "on" : "off");
-});
-
-// lamp slider – 2 trepte: 0 => LOW, 100 => HIGH
-allElements.lampSlider.addEventListener("input", () => {
-    let v = Number(allElements.lampSlider.value);
-    const snap = v < 50 ? 0 : 100;
-    allElements.lampSlider.value = snap;
-    allElements.lampValue.textContent = snap === 0 ? "Low" : "High";
-    updateSliderFill(allElements.lampSlider, currentLampColor);
     refreshLampCardBackground();
 });
 
-allElements.lampSlider.addEventListener("change", () => {
-    const snap = Number(allElements.lampSlider.value);
-    const step = snap < 50 ? 0 : 1; // 0 = LOW, 1 = HIGH
-    publishMessage(TOPIC_CMD_LAMP_BRIGHT, step);
-});
+// lamp intensity – hold
+setupHoldButton(
+    allElements.lampIntensityBtn,
+    () => publishMessage(TOPIC_CMD_LAMP_BRIGHT, "start"),
+    () => publishMessage(TOPIC_CMD_LAMP_BRIGHT, "stop")
+);
 
-// lamp colors
-allElements.lampDots.forEach(btn => {
-    btn.addEventListener("click", () => {
-        allElements.lampDots.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentLampColor = btn.dataset.color;
-        updateSliderFill(allElements.lampSlider, currentLampColor);
-        refreshLampCardBackground();
-        publishMessage(TOPIC_CMD_LAMP_COLOR, currentLampColor);
-    });
+// lamp color – single click
+allElements.lampColorBtn.addEventListener("click", () => {
+    publishMessage(TOPIC_CMD_LAMP_COLOR, "cycle");
 });
 
 // pump toggle
@@ -559,11 +535,13 @@ allElements.heatSlider.addEventListener("change", () => {
 // =====================
 // INIT
 // =====================
-[allElements.fanSlider, allElements.lampSlider,
- allElements.pumpSlider, allElements.heatSlider].forEach(s => {
+[allElements.fanSlider,
+ allElements.pumpSlider,
+ allElements.heatSlider].forEach(s => {
     if (s) updateSliderFill(s);
 });
 
 setInterval(updateClock, 1000);
 updateClock();
 startConnect();
+
