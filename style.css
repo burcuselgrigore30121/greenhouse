@@ -658,3 +658,79 @@ input[type="range"]:disabled {
     color: rgba(15,23,42,0.7);
     text-shadow: 0 1px 2px rgba(255,255,255,0.8);
 }
+.lamp-header-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+}
+
+.lamp-actions {
+    display:flex;
+    gap:8px;
+    margin-top:6px;
+    margin-bottom:4px;
+}
+
+.lamp-ctl-btn {
+    flex:1;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:7px 10px;
+    border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    font-size:12px;
+    color:var(--text-muted);
+    cursor:pointer;
+    font-family:inherit;
+    position:relative;
+    overflow:hidden;
+    transition:
+        background .18s ease,
+        box-shadow .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        transform .08s ease;
+}
+
+.lamp-ctl-btn::before {
+    content:"";
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at 0 0, rgba(34,197,94,0.25), transparent 55%);
+    opacity:0;
+    transform:scale(0.8);
+    transition:opacity .25s ease, transform .25s ease;
+    pointer-events:none;
+}
+
+.lamp-ctl-btn:hover {
+    background:#ecfdf5;
+    border-color:#bbf7d0;
+    color:#065f46;
+    box-shadow:0 10px 24px rgba(16,185,129,0.25);
+    transform:translateY(-1px);
+}
+
+.lamp-ctl-btn:active {
+    transform:translateY(0);
+    box-shadow:0 5px 14px rgba(16,185,129,0.3);
+}
+
+.lamp-ctl-btn:active::before {
+    opacity:1;
+    transform:scale(1);
+}
+
+.lamp-ctl-icon {
+    font-size:13px;
+}
+
+.lamp-hint {
+    margin-top:4px;
+    font-size:11px;
+    opacity:0.8;
+}
