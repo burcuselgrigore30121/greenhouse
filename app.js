@@ -486,7 +486,7 @@ allElements.lampIntensityBtn.addEventListener("click", () => {
     }, 220);
 
     // 350 = durata pulse-ului în ms, o poți schimba
-    publishMessage(TOPIC_CMD_LAMP_BRIGHT, "350");
+    publishMessage(TOPIC_CMD_LAMP_BRIGHT, "800");
 });
 
 // lamp color – single click
