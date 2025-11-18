@@ -12,7 +12,7 @@ const TOPIC_CMD_MODE       = "sera/comenzi/mod";
 const TOPIC_STAT_SENZORI   = "sera/stare/senzori";
 
 const TOPIC_CMD_LAMP_POWER  = "sera/comenzi/lampa/power";
-const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/bright";
+const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/intensity"; // unificat cu main.py
 const TOPIC_CMD_LAMP_COLOR  = "sera/comenzi/lampa/color";
 
 const TOPIC_CMD_PUMP_POWER  = "sera/comenzi/pompa/power";
@@ -151,22 +151,16 @@ function healthFromSensors(temp, soil, water) {
 }
 
 // =====================
-// SLIDER FILL
-// =====================
-// =====================
 // COLOR HELPERS
 // =====================
 function hexToRgb(hex) {
     if (!hex) return null;
     let h = hex.trim();
-
-    // acceptă "#a855f7" sau "a855f7" sau "#abc"
     if (h.startsWith("#")) h = h.slice(1);
     if (h.length === 3) {
         h = h.split("").map(c => c + c).join("");
     }
     if (h.length !== 6) return null;
-
     const num = parseInt(h, 16);
     return {
         r: (num >> 16) & 255,
@@ -259,6 +253,41 @@ function onMessageArrived(message) {
         allElements.lastUpdate.textContent =
             now.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
 
+        // --- LAMP STATE SYNC ---
+        if (typeof data.lamp_power === "number") {
+            const on = data.lamp_power === 1;
+            allElements.lampToggle.classList.toggle("on", on);
+            const label = on ? "On" : "Off";
+            allElements.lampToggleLabel.textContent = label;
+            allElements.lampMain.textContent = label;
+
+            if (!on) {
+                allElements.lampCard.style.background = "#f9fafb";
+                allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
+            } else {
+                refreshLampCardBackground();
+            }
+        }
+
+        if (data.lamp_color) {
+            currentLampColor = data.lamp_color;
+            allElements.lampDots.forEach(btn => {
+                const active = btn.dataset.color.toLowerCase() === currentLampColor.toLowerCase();
+                btn.classList.toggle("active", active);
+            });
+            updateSliderFill(allElements.lampSlider, currentLampColor);
+            refreshLampCardBackground();
+        }
+
+        if (typeof data.lamp_intensity_step === "number") {
+            const step = data.lamp_intensity_step ? 1 : 0;
+            const snap = step === 0 ? 0 : 100;
+            allElements.lampSlider.value = snap;
+            allElements.lampValue.textContent = snap === 0 ? "Low" : "High";
+            updateSliderFill(allElements.lampSlider, currentLampColor);
+            refreshLampCardBackground();
+        }
+
         hideSplash();
     } catch (e) {
         console.error("JSON parse error:", e);
@@ -329,8 +358,7 @@ function updateFanVisual() {
     const val = Number(allElements.fanSlider.value);
     if (isManualMode && val > 0) {
         allElements.fanVisual.classList.add("spin");
-        // viteza de rotație: mai mare val -> mai rapid
-        const base = 1.0;      // secunde
+        const base = 1.0;
         const min = 0.25;
         const speed = Math.max(min, base - 0.75 * (val / 100));
         allElements.fanVisual.style.setProperty("--fan-speed", `${speed}s`);
@@ -344,7 +372,7 @@ function updateFanVisual() {
 // =====================
 function refreshLampCardBackground() {
     const v = Number(allElements.lampSlider.value);
-    if (v === 0) {
+    if (v === 0 && !allElements.lampToggle.classList.contains("on")) {
         allElements.lampCard.style.background = "#f9fafb";
         allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
         return;
@@ -352,7 +380,6 @@ function refreshLampCardBackground() {
 
     const rgb = hexToRgb(currentLampColor);
     if (!rgb) {
-        // fallback dacă data-color e alt format (rgb(...), etc.)
         allElements.lampCard.style.background =
             "radial-gradient(circle at 0% 0%, rgba(168,85,247,0.25), #f9fafb 55%, #f9fafb 100%)";
         allElements.lampCard.style.boxShadow =
@@ -361,7 +388,7 @@ function refreshLampCardBackground() {
     }
 
     const r = v / 100;
-    const alpha = 0.18 + 0.40 * r; // intensitate în funcție de slider
+    const alpha = 0.18 + 0.40 * r;
 
     allElements.lampCard.style.background =
         `radial-gradient(circle at 0% 0%, rgba(${rgb.r},${rgb.g},${rgb.b},${alpha}), #f9fafb 55%, #f9fafb 100%)`;
@@ -384,7 +411,7 @@ function resetManualControls() {
     allElements.lampToggleLabel.textContent = "Off";
     allElements.lampMain.textContent = "Off";
     allElements.lampSlider.value = 0;
-    allElements.lampValue.textContent = "0%";
+    allElements.lampValue.textContent = "Low";
     currentLampColor = "#a855f7";
     updateSliderFill(allElements.lampSlider, currentLampColor);
     allElements.lampDots.forEach(btn => btn.classList.remove("active"));
@@ -433,17 +460,31 @@ allElements.lampToggle.addEventListener("click", () => {
     const label = on ? "On" : "Off";
     allElements.lampToggleLabel.textContent = label;
     allElements.lampMain.textContent = label;
+
+    if (!on) {
+        allElements.lampCard.style.background = "#f9fafb";
+        allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
+    } else {
+        refreshLampCardBackground();
+    }
+
     publishMessage(TOPIC_CMD_LAMP_POWER, on ? "on" : "off");
 });
 
-// lamp slider
+// lamp slider – 2 trepte: 0 => LOW, 100 => HIGH
 allElements.lampSlider.addEventListener("input", () => {
-    allElements.lampValue.textContent = `${allElements.lampSlider.value}%`;
+    let v = Number(allElements.lampSlider.value);
+    const snap = v < 50 ? 0 : 100;
+    allElements.lampSlider.value = snap;
+    allElements.lampValue.textContent = snap === 0 ? "Low" : "High";
     updateSliderFill(allElements.lampSlider, currentLampColor);
     refreshLampCardBackground();
 });
+
 allElements.lampSlider.addEventListener("change", () => {
-    publishMessage(TOPIC_CMD_LAMP_BRIGHT, allElements.lampSlider.value);
+    const snap = Number(allElements.lampSlider.value);
+    const step = snap < 50 ? 0 : 1; // 0 = LOW, 1 = HIGH
+    publishMessage(TOPIC_CMD_LAMP_BRIGHT, step);
 });
 
 // lamp colors
