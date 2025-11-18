@@ -11,17 +11,18 @@ const TOPIC_CMD_FAN        = "sera/comenzi/ventilator";
 const TOPIC_CMD_MODE       = "sera/comenzi/mod";
 const TOPIC_STAT_SENZORI   = "sera/stare/senzori";
 
-const TOPIC_CMD_LAMP_POWER  = "sera/comenzi/lampa/power";
-const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/intensity"; // unificat cu main.py
-const TOPIC_CMD_LAMP_COLOR  = "sera/comenzi/lampa/color";
+const TOPIC_CMD_LAMP_POWER  = "sera/comenzi/lampa/power";     // ON/OFF
+const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/intensity"; // 0/1
+const TOPIC_CMD_LAMP_COLOR  = "sera/comenzi/lampa/color";     // hex
 
 const TOPIC_CMD_PUMP_POWER  = "sera/comenzi/pompa/power";
 const TOPIC_CMD_PUMP_SPEED  = "sera/comenzi/pompa/speed";
 
 const TOPIC_CMD_HEAT_LEVEL  = "sera/comenzi/incalzire/level";
 
-let isManualMode = false;
-let currentLampColor = "#a855f7"; // mov default
+let isManualMode     = false;
+let currentLampColor = "#a855f7"; // default mov
+let currentLampPower = 0;         // 0 = off, 1 = on
 
 // =====================
 // DOM ELEMENTS
@@ -151,7 +152,7 @@ function healthFromSensors(temp, soil, water) {
 }
 
 // =====================
-// COLOR HELPERS
+// COLOR + SLIDER HELPERS
 // =====================
 function hexToRgb(hex) {
     if (!hex) return null;
@@ -255,7 +256,9 @@ function onMessageArrived(message) {
 
         // --- LAMP STATE SYNC ---
         if (typeof data.lamp_power === "number") {
-            const on = data.lamp_power === 1;
+            currentLampPower = data.lamp_power === 1 ? 1 : 0;
+            const on = currentLampPower === 1;
+
             allElements.lampToggle.classList.toggle("on", on);
             const label = on ? "On" : "Off";
             allElements.lampToggleLabel.textContent = label;
@@ -328,13 +331,13 @@ function setModeUI(manual, publish) {
     if (manual) {
         allElements.btnManual.classList.add("active");
         allElements.btnAuto.classList.remove("active");
-        allElements.modeChip.textContent = "MANUAL";
+        if (allElements.modeChip) allElements.modeChip.textContent = "MANUAL";
         allElements.controlsCard.classList.remove("hidden");
         allElements.overviewCard.classList.add("manual-mode");
     } else {
         allElements.btnManual.classList.remove("active");
         allElements.btnAuto.classList.add("active");
-        allElements.modeChip.textContent = "AUTO";
+        if (allElements.modeChip) allElements.modeChip.textContent = "AUTO";
         allElements.controlsCard.classList.add("hidden");
         allElements.overviewCard.classList.remove("manual-mode");
         resetManualControls();
@@ -372,7 +375,9 @@ function updateFanVisual() {
 // =====================
 function refreshLampCardBackground() {
     const v = Number(allElements.lampSlider.value);
-    if (v === 0 && !allElements.lampToggle.classList.contains("on")) {
+    const on = currentLampPower === 1;
+
+    if (!on) {
         allElements.lampCard.style.background = "#f9fafb";
         allElements.lampCard.style.boxShadow = "0 10px 24px rgba(15,23,42,0.14)";
         return;
@@ -406,7 +411,7 @@ function resetManualControls() {
     updateSliderFill(allElements.fanSlider);
     updateFanVisual();
 
-    // LAMP
+    // LAMP (doar UI)
     allElements.lampToggle.classList.remove("on");
     allElements.lampToggleLabel.textContent = "Off";
     allElements.lampMain.textContent = "Off";
@@ -453,9 +458,12 @@ allElements.fanSlider.addEventListener("change", () => {
     if (isManualMode) publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
 });
 
-// lamp toggle
+// lamp toggle (folosește currentLampPower, nu clasa)
 allElements.lampToggle.addEventListener("click", () => {
-    const on = !allElements.lampToggle.classList.contains("on");
+    const desired = currentLampPower === 1 ? 0 : 1;
+    currentLampPower = desired;
+
+    const on = desired === 1;
     allElements.lampToggle.classList.toggle("on", on);
     const label = on ? "On" : "Off";
     allElements.lampToggleLabel.textContent = label;
