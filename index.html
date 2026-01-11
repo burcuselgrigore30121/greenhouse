@@ -5,23 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Greenhouse</title>
 
-    <!-- LOGO TAB -->
     <link rel="icon" type="image/png" href="green-house-logo.png">
     <link rel="apple-touch-icon" href="green-house-logo.png">
     <meta name="theme-color" content="#00b074">
 
-    <!-- CSS -->
     <link rel="stylesheet" href="style.css?v=7">
-
-    <!-- MQTT client (TREBUIE ÎNAINTE de app.js) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-
-    <!-- JS aplicație -->
     <script src="app.js?v=7" defer></script>
 </head>
 
 <body>
-<!-- SPLASH -->
 <div id="splash">
     <div class="splash-inner">
         <div class="splash-logo">
@@ -33,7 +26,6 @@
 </div>
 
 <div class="screen">
-    <!-- TOP -->
     <div class="top-bar">
         <div class="top-left">
             <div class="top-logo">
@@ -57,7 +49,6 @@
         </span>
     </div>
 
-    <!-- CARD PRINCIPAL: OVERVIEW + CONTROALE MANUAL -->
     <div class="card" id="overview-card">
 
         <div class="card-header">
@@ -66,7 +57,6 @@
                 <div class="card-subtitle">Indoor greenhouse</div>
             </div>
 
-            <!-- Dreapta: Auto / Manual + chip -->
             <div class="card-header-right">
                 <div class="mode-buttons">
                     <button id="btn-auto" class="mode-btn active">Auto</button>
@@ -108,6 +98,7 @@
                 </div>
                 <div class="metric-tag" id="metric-temp-tag">--</div>
             </div>
+
             <div class="metric-card">
                 <div class="metric-label">Light</div>
                 <div class="metric-value">
@@ -116,7 +107,8 @@
                 </div>
                 <div class="metric-tag" id="metric-light-tag">--</div>
             </div>
-            <div class="metric-card">
+
+            <div class="metric-card" data-metric="soil">
                 <div class="metric-label">Soil moisture</div>
                 <div class="metric-value">
                     <span id="metric-soil">--</span>
@@ -124,7 +116,8 @@
                 </div>
                 <div class="metric-tag" id="metric-soil-tag">--</div>
             </div>
-            <div class="metric-card">
+
+            <div class="metric-card" data-metric="water">
                 <div class="metric-label">Water level</div>
                 <div class="metric-value">
                     <span id="metric-water">--</span>
@@ -134,12 +127,9 @@
             </div>
         </div>
 
-        <!-- SECȚIUNE CONTROALE MANUAL, ÎNĂUNTRUL ACELEIAȘI CARD -->
         <div id="controls-card" class="controls-section hidden">
-            <!-- separator fin -->
             <div class="controls-separator"></div>
 
-            <!-- FAN -->
             <div id="fan-card">
                 <div class="fan-top-row">
                     <div>
@@ -159,39 +149,36 @@
                 </div>
             </div>
 
-            <!-- GRID MANUAL DEVICES -->
             <div id="device-controls">
                 <div class="device-grid">
-                    <!-- LAMP -->
-<div class="device-card" id="lamp-card">
-    <div class="device-title">Lamp</div>
 
-    <div class="lamp-header-row">
-        <div class="device-main" id="lamp-main">Off</div>
-        <button type="button" class="toggle" id="lamp-toggle">
-            <div class="toggle-thumb"></div>
-            <span id="lamp-toggle-label">Off</span>
-        </button>
-    </div>
+                    <div class="device-card" id="lamp-card">
+                        <div class="device-title">Lamp</div>
 
-    <div class="lamp-actions">
-        <button type="button" class="lamp-ctl-btn" id="lamp-intensity-btn">
-            <span class="lamp-ctl-icon">☀</span>
-            <span>Intensity</span>
-        </button>
-        <button type="button" class="lamp-ctl-btn" id="lamp-color-btn">
-            <span class="lamp-ctl-icon">🎨</span>
-            <span>Color</span>
-        </button>
-    </div>
+                        <div class="lamp-header-row">
+                            <div class="device-main" id="lamp-main">Off</div>
+                            <button type="button" class="toggle" id="lamp-toggle">
+                                <div class="toggle-thumb"></div>
+                                <span id="lamp-toggle-label">Off</span>
+                            </button>
+                        </div>
 
-   <div class="device-sub lamp-hint">
-    Tap <strong>Intensity</strong> to adjust step by step. Tap <strong>Color</strong> to cycle.
-</div>
-</div>
+                        <div class="lamp-actions">
+                            <button type="button" class="lamp-ctl-btn" id="lamp-intensity-btn">
+                                <span class="lamp-ctl-icon">☀</span>
+                                <span>Intensity</span>
+                            </button>
+                            <button type="button" class="lamp-ctl-btn" id="lamp-color-btn">
+                                <span class="lamp-ctl-icon">🎨</span>
+                                <span>Color</span>
+                            </button>
+                        </div>
 
+                        <div class="device-sub lamp-hint">
+                            Tap <strong>Intensity</strong> to adjust step by step. Tap <strong>Color</strong> to cycle.
+                        </div>
+                    </div>
 
-                    <!-- WATER PUMP -->
                     <div class="device-card" id="pump-card">
                         <div class="device-title">Water pump</div>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;position:relative;z-index:1;">
@@ -208,7 +195,6 @@
                         <input type="range" id="pump-slider" min="0" max="100" value="0" style="position:relative;z-index:1;">
                     </div>
 
-                    <!-- HEAT -->
                     <div class="device-card" id="heat-card">
                         <div class="device-title">Heat</div>
                         <div class="fan-value-row" style="margin-bottom:4px;">
@@ -221,17 +207,16 @@
                         </div>
                     </div>
 
-                    <!-- EXTRA -->
                     <div class="device-card">
                         <div class="device-title">Extra</div>
                         <div class="device-main" style="font-size:15px;">Reserved for future module</div>
                     </div>
+
                 </div>
             </div>
         </div>
-        <!-- end controls-section -->
 
-    </div> <!-- end overview-card -->
+    </div>
 
     <div class="footer-line">
         Device IP: <span id="ip-label">--</span> · Last update: <span id="last-update">--</span>
@@ -239,9 +224,3 @@
 </div>
 </body>
 </html>
-
-
-
-
-
-
