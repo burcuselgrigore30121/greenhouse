@@ -4,36 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Greenhouse</title>
-
-    <link rel="icon" type="image/png" href="green-house-logo.png">
-    <link rel="apple-touch-icon" href="green-house-logo.png">
-    <meta name="theme-color" content="#00b074">
-
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-    <script src="app.js?v=7" defer></script>
+    <script src="app.js" defer></script>
 </head>
-
 <body>
+
 <div id="splash">
     <div class="splash-inner">
-        <div class="splash-logo">
-            <img src="green-house-logo.png" alt="Green House">
-        </div>
+        <div class="splash-logo"><img src="green-house-logo.png" alt="Logo"></div>
         <div class="splash-title">Hi, welcome 👋</div>
-        <div class="splash-sub">You are entering your automated greenhouse</div>
+        <div class="splash-sub">Entering automated greenhouse...</div>
     </div>
 </div>
 
 <div class="screen">
     <div class="top-bar">
         <div class="top-left">
-            <div class="top-logo">
-                <img src="green-house-logo.png" alt="Green House Logo">
-            </div>
+            <div class="top-logo"><img src="green-house-logo.png" alt="Logo"></div>
             <div class="top-text">
                 <div class="location-label">Greenhouse</div>
-                <div class="location-name" id="loc-name">Automated Greenhouse</div>
+                <div class="location-name">Automated System</div>
             </div>
         </div>
         <div class="top-right">
@@ -50,37 +41,28 @@
     </div>
 
     <div class="card" id="overview-card">
-
         <div class="card-header">
             <div>
                 <div class="card-title">Overview</div>
-                <div class="card-subtitle">Indoor greenhouse</div>
+                <div class="card-subtitle">Indoor environment</div>
             </div>
-
-            <div class="card-header-right">
-                <div class="mode-buttons">
-                    <button id="btn-auto" class="mode-btn active">Auto</button>
-                    <button id="btn-manual" class="mode-btn">Manual</button>
-                </div>
-                <div class="chip">
-                    <span class="chip-dot"></span>
-                    <span id="mode-chip">AUTO</span>
-                </div>
+            <div class="mode-buttons">
+                <button id="btn-auto" class="mode-btn active">Auto</button>
+                <button id="btn-manual" class="mode-btn">Manual</button>
             </div>
         </div>
 
         <div class="temp-row">
             <div class="temp-main" id="temp-main">--<span>°C</span></div>
             <div class="temp-extra">
-                <span>Air / soil humidity</span>
-                <span id="humid-line">-- % / -- %</span>
+                <span id="humid-line">Air: --% / Soil: --%</span>
                 <span id="light-line">Light: -- lx</span>
             </div>
         </div>
 
         <div class="health-row">
             <div class="health-left">
-                <div class="health-label">Overall crop health</div>
+                <div class="health-label">Crop Health</div>
                 <div class="health-value" id="health-value">--%</div>
                 <div class="health-badge" id="health-badge">Calculating...</div>
             </div>
@@ -91,154 +73,92 @@
 
         <div class="metrics-grid">
             <div class="metric-card">
-                <div class="metric-label">Temperature</div>
-                <div class="metric-value">
-                    <span id="metric-temp">--</span>
-                    <span class="metric-unit">°C</span>
-                </div>
-                <div class="metric-tag" id="metric-temp-tag">--</div>
+                <div class="metric-label">Temp</div>
+                <div class="metric-value"><span id="metric-temp">--</span><span class="metric-unit">°C</span></div>
             </div>
-
             <div class="metric-card">
                 <div class="metric-label">Light</div>
-                <div class="metric-value">
-                    <span id="metric-light">--</span>
-                    <span class="metric-unit">lx</span>
-                </div>
-                <div class="metric-tag" id="metric-light-tag">--</div>
+                <div class="metric-value"><span id="metric-light">--</span><span class="metric-unit">lx</span></div>
             </div>
-
             <div class="metric-card" data-metric="soil">
-                <div class="metric-label">Soil moisture</div>
-                <div class="metric-value">
-                    <span id="metric-soil">--</span>
-                    <span class="metric-unit">%</span>
-                </div>
-                <div class="metric-tag" id="metric-soil-tag">--</div>
+                <div class="metric-label">Soil</div>
+                <div class="metric-value"><span id="metric-soil">--</span><span class="metric-unit">%</span></div>
             </div>
-
             <div class="metric-card" data-metric="water">
-                <div class="metric-label">Water level</div>
-                <div class="metric-value">
-                    <span id="metric-water">--</span>
-                    <span class="metric-unit">%</span>
-                </div>
-                <div class="metric-tag" id="metric-water-tag">--</div>
+                <div class="metric-label">Water</div>
+                <div class="metric-value"><span id="metric-water">--</span><span class="metric-unit">%</span></div>
             </div>
         </div>
 
-        <div id="controls-card" class="controls-section hidden">
-            <div class="controls-separator"></div>
-
+        <div id="controls-card" class="hidden">
+            <div style="height:1px; background:#e5e7eb; margin:20px 0;"></div>
+            
             <div id="fan-card">
                 <div class="fan-top-row">
-                    <div>
-                        <div class="fan-title">Fan</div>
-                        <div class="fan-sub">Cooling & airflow</div>
-                    </div>
-                    <div class="fan-visual" id="fan-visual">
-                        <div class="fan-blades"></div>
-                    </div>
+                    <div><div class="fan-title">Fan</div><div class="fan-sub">Airflow</div></div>
+                    <div class="fan-visual" id="fan-visual"><div class="fan-blades"></div></div>
                 </div>
-                <div class="fan-slider-row">
-                    <div class="fan-value-row">
-                        <div>Fan speed</div>
-                        <div class="fan-value-main" id="fan-value">0%</div>
-                    </div>
-                    <input type="range" id="fan-slider" min="0" max="100" value="0">
+                <div class="fan-value-row">
+                    <div>Speed</div>
+                    <div class="fan-value-main" id="fan-value">0%</div>
                 </div>
+                <input type="range" id="fan-slider" min="0" max="100" value="0">
             </div>
 
-            <div id="device-controls">
-                <div class="device-grid">
-
-                    <div class="device-card" id="lamp-card">
-                        <div class="device-title">Lamp</div>
-
-                        <div class="lamp-header-row">
-                            <div class="device-main" id="lamp-main">Off</div>
-                            <button type="button" class="toggle" id="lamp-toggle">
-                                <div class="toggle-thumb"></div>
-                                <span id="lamp-toggle-label">Off</span>
-                            </button>
-                        </div>
-
-                        <div class="lamp-actions">
-    <button type="button" class="lamp-ctl-btn" id="lamp-intensity-down">
-        <span class="lamp-ctl-icon">➖</span>
-        <span>Dim</span>
-    </button>
-    <button type="button" class="lamp-ctl-btn" id="lamp-intensity-up">
-        <span class="lamp-ctl-icon">➕</span>
-        <span>Bright</span>
-    </button>
-    <button type="button" class="lamp-ctl-btn" id="lamp-color-btn">
-        <span class="lamp-ctl-icon">🎨</span>
-        <span>Color</span>
-    </button>
-</div>
-
-                        <div class="device-sub lamp-hint">
-                            Tap <strong>Intensity</strong> to adjust step by step. Tap <strong>Color</strong> to cycle.
-                        </div>
+            <div class="device-grid">
+                <div class="device-card" id="lamp-card">
+                    <div class="device-title">Lamp</div>
+                    <div class="lamp-header-row">
+                        <div class="device-main" id="lamp-main">Off</div>
+                        <button class="toggle" id="lamp-toggle"><div class="toggle-thumb"></div></button>
                     </div>
-
-                    <div class="device-card" id="pump-card">
-                        <div class="device-title">Water pump</div>
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;position:relative;z-index:1;">
-                            <div class="device-main" id="pump-main">Off</div>
-                            <button type="button" class="toggle" id="pump-toggle">
-                                <div class="toggle-thumb"></div>
-                                <span id="pump-toggle-label">Off</span>
-                            </button>
-                        </div>
-                        <div class="fan-value-row" style="margin-bottom:4px;position:relative;z-index:1;">
-                            <div>Flow</div>
-                            <div class="fan-value-main" id="pump-value" style="font-size:15px;">0%</div>
-                        </div>
-                        <input type="range" id="pump-slider" min="0" max="100" value="0" style="position:relative;z-index:1;">
+                    <div class="lamp-actions">
+                        <button class="lamp-ctl-btn" id="lamp-intensity-down">➖</button>
+                        <button class="lamp-ctl-btn" id="lamp-intensity-up">➕</button>
+                        <button class="lamp-ctl-btn" id="lamp-color-btn">🎨</button>
                     </div>
+                </div>
 
-                    <div class="device-card" id="heat-card">
-                        <div class="device-title">Heat</div>
-                        <div class="fan-value-row" style="margin-bottom:4px;">
-                            <div>Intensity</div>
-                            <div class="fan-value-main" id="heat-value" style="font-size:15px;">0%</div>
-                        </div>
-                        <input type="range" id="heat-slider" min="0" max="100" value="0">
-                        <div class="device-sub" style="margin-top:6px;">
-                            Higher values generate more heat.
-                        </div>
+                <div class="device-card" id="pump-card">
+                    <div class="device-title">Water Pump</div>
+                    <div class="lamp-header-row">
+                        <div class="device-main" id="pump-main">Off</div>
+                        <button class="toggle" id="pump-toggle"><div class="toggle-thumb"></div></button>
                     </div>
+                    <div class="fan-value-row">
+                        <div>Flow</div>
+                        <div id="pump-value">0%</div>
+                    </div>
+                    <input type="range" id="pump-slider" min="0" max="100" value="0">
+                </div>
 
-                    <div class="device-card" id="hum-card">
-    <div class="device-title">Humidifier</div>
-    <div class="hum-content">
-        <div class="device-main" id="hum-main">Off</div>
-        <button type="button" class="toggle" id="hum-toggle">
-            <div class="toggle-thumb"></div>
-            <span id="hum-toggle-label">Off</span>
-        </button>
-    </div>
-                        </div> </div> </div> <div class="footer-line">
-        Device IP: <span id="ip-label">--</span> · Last update: <span id="last-update">--</span>
-    </div>
+                <div class="device-card" id="hum-card">
+                    <div class="device-title">Humidifier</div>
+                    <div class="hum-content">
+                        <div class="device-main" id="hum-main">Off</div>
+                        <button class="toggle" id="hum-toggle"><div class="toggle-thumb"></div></button>
+                    </div>
+                    <div id="steam-container" class="steam-hidden">
+                        <div class="steam-particle s1"></div><div class="steam-particle s2"></div><div class="steam-particle s3"></div>
+                    </div>
+                </div>
 
-</div> </div> </body>
-</html>
-    <div id="steam-container" class="steam-hidden">
-        <div class="steam-particle s1"></div>
-        <div class="steam-particle s2"></div>
-        <div class="steam-particle s3"></div>
+                <div class="device-card" id="heat-card">
+                    <div class="device-title">Heater</div>
+                    <div class="fan-value-row">
+                        <div>Level</div>
+                        <div id="heat-value">0%</div>
+                    </div>
+                    <input type="range" id="heat-slider" min="0" max="100" value="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-line">
+            IP: <span id="ip-label">--</span> · Update: <span id="last-update">--</span>
+        </div>
     </div>
 </div>
 
-    <div class="footer-line">
-        Device IP: <span id="ip-label">--</span> · Last update: <span id="last-update">--</span>
-    </div>
-</div>
 </body>
 </html>
-
-
-
