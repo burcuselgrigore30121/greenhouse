@@ -2,7 +2,7 @@
 // MQTT CONFIG
 // =====================
 const MQTT_HOST = "broker.emqx.io";
-const MQTT_PORT = 8084; // WSS
+const MQTT_PORT = 8084; // WSS (browser)
 const MQTT_USER = "";
 const MQTT_PASS = "";
 const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8);
@@ -10,14 +10,14 @@ const MQTT_CLIENT_ID = "WebAppClient_" + Math.random().toString(16).substr(2, 8)
 const TOPIC_CMD_FAN         = "sera/comenzi/ventilator";
 const TOPIC_CMD_MODE        = "sera/comenzi/mod";
 
-const TOPIC_CMD_LAMP_POWER  = "sera/comenzi/lampa/power";     // "on" / "off"
-const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/intensity"; // acceptat (în ESP îl ignori acum)
-const TOPIC_CMD_LAMP_COLOR  = "sera/comenzi/lampa/color";     // acceptat (în ESP îl ignori acum)
+const TOPIC_CMD_LAMP_POWER  = "sera/comenzi/lampa/power";
+const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/intensity";
+const TOPIC_CMD_LAMP_COLOR  = "sera/comenzi/lampa/color";
 
-const TOPIC_CMD_PUMP_POWER  = "sera/comenzi/pompa/power";     // "on" / "off"
-const TOPIC_CMD_PUMP_SPEED  = "sera/comenzi/pompa/speed";     // 0..100
+const TOPIC_CMD_PUMP_POWER  = "sera/comenzi/pompa/power";
+const TOPIC_CMD_PUMP_SPEED  = "sera/comenzi/pompa/speed";
 
-const TOPIC_CMD_HEAT_LEVEL  = "sera/comenzi/incalzire/level"; // 0..100 (ESP plafonează la 20%)
+const TOPIC_CMD_HEAT_LEVEL  = "sera/comenzi/incalzire/level";
 
 const TOPIC_STAT_SENZORI    = "sera/stare/senzori";
 
@@ -25,9 +25,12 @@ const TOPIC_STAT_SENZORI    = "sera/stare/senzori";
 // STATE
 // =====================
 let isManualMode     = false;
-let currentLampPower = 0;         // 0/1 (din device)
-let currentLampColor = "#a855f7"; // doar UI
+let currentLampPower = 0;
+let currentLampColor = "#a855f7";
 let hasFirstStatus   = false;
+
+let waterLocked = false;
+let lastDistCm  = null;
 
 // =====================
 // DOM
@@ -83,6 +86,9 @@ const allElements = {
   heatValue: document.getElementById("heat-value"),
   heatCard: document.getElementById("heat-card")
 };
+
+const metricSoilCard  = document.querySelector('.metric-card[data-metric="soil"]');
+const metricWaterCard = document.querySelector('.metric-card[data-metric="water"]');
 
 // =====================
 // MQTT CLIENT
@@ -195,6 +201,18 @@ function onMessageArrived(message) {
     const soil  = Number(data.soil ?? 0);
     const water = Number(data.water ?? 0);
 
+    waterLocked = (Number(data.water_lock ?? 0) === 1);
+    lastDistCm  = (typeof data.dist_cm === "number") ? data.dist_cm : null;
+
+    // status pill: prioritize lock message when connected
+    if (waterLocked) {
+      allElements.statusText.textContent = "Water tank empty (LOCK)";
+      allElements.statusPill.classList.add("disconnected");
+    } else {
+      allElements.statusText.textContent = "Live connected";
+      allElements.statusPill.classList.remove("disconnected");
+    }
+
     // OVERVIEW
     allElements.tempMain.innerHTML = `${t.toFixed(1)}<span>°C</span>`;
     allElements.humidLine.textContent = `${hum.toFixed(0)} % / ${soil.toFixed(0)} %`;
@@ -205,6 +223,7 @@ function onMessageArrived(message) {
     allElements.metricSoil.textContent  = soil.toFixed(0);
     allElements.metricWater.textContent = water.toFixed(0);
 
+    // metric tags
     const lt = labelForTemp(t);
     allElements.metricTempTag.textContent = lt.txt;
     allElements.metricTempTag.className = "metric-tag " + lt.cls;
@@ -228,7 +247,14 @@ function onMessageArrived(message) {
     else if (health >= 60) allElements.healthBadge.textContent = "OK";
     else allElements.healthBadge.textContent = "Attention";
 
-    // MODE din device
+    // animations (no layout change)
+    if (metricWaterCard) metricWaterCard.style.setProperty("--water-fill", `${clamp01to100(water)}%`);
+    if (metricSoilCard) {
+      const glow = soilGlowFromPct(soil); // 0..0.28
+      metricSoilCard.style.setProperty("--soil-glow", String(glow));
+    }
+
+    // MODE
     const manualFromDevice = (data.mode === "manual");
     setModeUI(manualFromDevice, false);
 
@@ -240,7 +266,7 @@ function onMessageArrived(message) {
       updateFanVisual();
     }
 
-    // PUMP sync (releu + pwm)
+    // PUMP sync
     if (typeof data.pump_power === "number") {
       const on = data.pump_power === 1;
       allElements.pumpToggle.classList.toggle("on", on);
@@ -255,7 +281,23 @@ function onMessageArrived(message) {
       allElements.pumpCard.style.setProperty("--pump-level", data.pump_pct + "%");
     }
 
-    // HEAT sync (îți arată efectiv cât aplică ESP: heat_pct)
+    // lock UI on pump
+    allElements.pumpCard.classList.toggle("locked", waterLocked);
+    if (waterLocked) {
+      // force UI safe state
+      allElements.pumpToggle.classList.remove("on");
+      allElements.pumpToggleLabel.textContent = "Off";
+      allElements.pumpMain.textContent = "Off";
+
+      if (document.activeElement !== allElements.pumpSlider) {
+        allElements.pumpSlider.value = "0";
+        allElements.pumpValue.textContent = "0%";
+        updateSliderFill(allElements.pumpSlider, "#3b82f6");
+        allElements.pumpCard.style.setProperty("--pump-level", "0%");
+      }
+    }
+
+    // HEAT sync
     if (typeof data.heat_pct === "number" && document.activeElement !== allElements.heatSlider) {
       allElements.heatSlider.value = String(data.heat_pct);
       allElements.heatValue.textContent = `${data.heat_pct}%`;
@@ -286,6 +328,21 @@ function onMessageArrived(message) {
   } catch (e) {
     console.error("JSON parse error:", e);
   }
+}
+
+function clamp01to100(x){
+  if (!isFinite(x)) return 0;
+  if (x < 0) return 0;
+  if (x > 100) return 100;
+  return x;
+}
+
+function soilGlowFromPct(pct){
+  const p = clamp01to100(pct);
+  // glow stronger around 55..75
+  const d = Math.abs(p - 65);
+  const r = Math.max(0, 1 - d / 35); // 0..1
+  return (0.06 + 0.22 * r).toFixed(3);
 }
 
 // =====================
@@ -338,7 +395,6 @@ function setModeUI(manual, publish) {
     if (allElements.modeChip) allElements.modeChip.textContent = "AUTO";
     allElements.controlsCard.classList.add("hidden");
     allElements.overviewCard.classList.remove("manual-mode");
-    // NU resetăm valori hardware aici. Starea vine din device pe TOPIC_STAT_SENZORI.
   }
 
   updateSliderFill(allElements.fanSlider);
@@ -346,8 +402,6 @@ function setModeUI(manual, publish) {
 
   if (publish) {
     publishMessage(TOPIC_CMD_MODE, manual ? "manual" : "auto");
-
-    // dacă intri în manual, trimite setarea curentă (fan) ca să fie determinist
     if (manual) publishMessage(TOPIC_CMD_FAN, allElements.fanSlider.value);
   }
 }
@@ -396,8 +450,6 @@ function refreshLampCardBackground() {
 // =====================
 // EVENT LISTENERS
 // =====================
-
-// mod auto/manual
 allElements.btnAuto.addEventListener("click", () => setModeUI(false, true));
 allElements.btnManual.addEventListener("click", () => setModeUI(true, true));
 
@@ -429,7 +481,7 @@ allElements.lampToggle.addEventListener("click", () => {
   refreshLampCardBackground();
 });
 
-// LAMP intensity (UI only; device acceptă topicul, dar în codul tău nu face nimic)
+// LAMP intensity
 allElements.lampIntensityBtn.addEventListener("click", () => {
   if (!hasFirstStatus) return;
   if (!isManualMode) return;
@@ -440,7 +492,7 @@ allElements.lampIntensityBtn.addEventListener("click", () => {
   publishMessage(TOPIC_CMD_LAMP_BRIGHT, "800");
 });
 
-// LAMP color (UI only)
+// LAMP color
 allElements.lampColorBtn.addEventListener("click", () => {
   if (!hasFirstStatus) return;
   if (!isManualMode) return;
@@ -451,10 +503,11 @@ allElements.lampColorBtn.addEventListener("click", () => {
   setTimeout(() => allElements.lampColorBtn.classList.remove("pulse"), 220);
 });
 
-// PUMP toggle (releu)
+// PUMP toggle (blocked if locked)
 allElements.pumpToggle.addEventListener("click", () => {
   if (!hasFirstStatus) return;
   if (!isManualMode) return;
+  if (waterLocked) return;
 
   const on = !allElements.pumpToggle.classList.contains("on");
   allElements.pumpToggle.classList.toggle("on", on);
@@ -466,7 +519,7 @@ allElements.pumpToggle.addEventListener("click", () => {
   publishMessage(TOPIC_CMD_PUMP_POWER, on ? "on" : "off");
 });
 
-// PUMP slider (PWM)
+// PUMP slider (blocked if locked)
 allElements.pumpSlider.addEventListener("input", () => {
   const v = Number(allElements.pumpSlider.value);
   allElements.pumpValue.textContent = `${v}%`;
@@ -474,10 +527,11 @@ allElements.pumpSlider.addEventListener("input", () => {
   allElements.pumpCard.style.setProperty("--pump-level", v + "%");
 });
 allElements.pumpSlider.addEventListener("change", () => {
+  if (waterLocked) return;
   publishIfManual(TOPIC_CMD_PUMP_SPEED, allElements.pumpSlider.value);
 });
 
-// HEAT slider (0..100 pe UI, ESP plafonează la 20%)
+// HEAT slider
 allElements.heatSlider.addEventListener("input", () => {
   const v = Number(allElements.heatSlider.value);
   allElements.heatValue.textContent = `${v}%`;
