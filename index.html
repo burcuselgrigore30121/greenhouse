@@ -211,16 +211,21 @@
                         </div>
                     </div>
 
-                    <div class="device-card">
-                        <div class="device-title">Extra</div>
-                        <div class="device-main" style="font-size:15px;">Reserved for future module</div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
+                    <div class="device-card" id="hum-card">
+    <div class="device-title">Humidifier</div>
+    <div class="hum-content">
+        <div class="device-main" id="hum-main">Off</div>
+        <button type="button" class="toggle" id="hum-toggle">
+            <div class="toggle-thumb"></div>
+            <span id="hum-toggle-label">Off</span>
+        </button>
     </div>
+    <div id="steam-container" class="steam-hidden">
+        <div class="steam-particle s1"></div>
+        <div class="steam-particle s2"></div>
+        <div class="steam-particle s3"></div>
+    </div>
+</div>
 
     <div class="footer-line">
         Device IP: <span id="ip-label">--</span> · Last update: <span id="last-update">--</span>
@@ -228,4 +233,5 @@
 </div>
 </body>
 </html>
+
 
