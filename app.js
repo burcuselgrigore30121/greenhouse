@@ -86,6 +86,10 @@ lampIntensityDown: document.getElementById("lamp-intensity-down"),
   heatSlider: document.getElementById("heat-slider"),
   heatValue: document.getElementById("heat-value"),
   heatCard: document.getElementById("heat-card")
+
+  humToggle: document.getElementById("hum-toggle"),
+  humMain: document.getElementById("hum-main"),
+  steamContainer: document.getElementById("steam-container")
 };
 
 const metricSoilCard  = document.querySelector('.metric-card[data-metric="soil"]');
