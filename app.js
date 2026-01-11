@@ -285,7 +285,26 @@ function onMessageArrived(message) {
       updateSliderFill(allElements.pumpSlider, "#3b82f6");
       allElements.pumpCard.style.setProperty("--pump-level", data.pump_pct + "%");
     }
+// HUMIDIFIER toggle
+allElements.humToggle.addEventListener("click", () => {
+    if (!hasFirstStatus) return;
+    if (!isManualMode) return;
 
+    const isOn = !allElements.humToggle.classList.contains("on");
+    
+    // Update vizual imediat
+    allElements.humToggle.classList.toggle("on", isOn);
+    allElements.humMain.textContent = isOn ? "On" : "Off";
+    
+    // Pornire/Oprire aburi pe site
+    if (isOn) {
+        allElements.steamContainer.classList.remove("steam-hidden");
+    } else {
+        allElements.steamContainer.classList.add("steam-hidden");
+    }
+
+    publishMessage("sera/comenzi/umidificator/power", isOn ? "on" : "off");
+});
     // lock UI on pump
     allElements.pumpCard.classList.toggle("locked", waterLocked);
     if (waterLocked) {
