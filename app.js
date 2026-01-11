@@ -1,4 +1,10 @@
-// =====================
+window.addEventListener('load', () => {
+    // Ascunde splash-ul după 2 secunde chiar dacă MQTT nu e gata
+    setTimeout(() => {
+        const splash = document.getElementById("splash");
+        if (splash) splash.style.display = "none";
+    }, 2000);
+});// =====================
 // MQTT CONFIG
 // =====================
 const MQTT_HOST = "broker.emqx.io";
