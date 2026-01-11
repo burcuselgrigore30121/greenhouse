@@ -482,15 +482,24 @@ allElements.lampToggle.addEventListener("click", () => {
   refreshLampCardBackground();
 });
 
-// LAMP intensity
-allElements.lampIntensityBtn.addEventListener("click", () => {
-  if (!hasFirstStatus) return;
-  if (!isManualMode) return;
+// LAMP intensity UP
+allElements.lampIntensityUp.addEventListener("click", () => {
+  if (!hasFirstStatus || !isManualMode) return;
 
-  allElements.lampIntensityBtn.classList.add("active-hold");
-  setTimeout(() => allElements.lampIntensityBtn.classList.remove("active-hold"), 220);
+  allElements.lampIntensityUp.classList.add("active-hold");
+  setTimeout(() => allElements.lampIntensityUp.classList.remove("active-hold"), 220);
 
-  publishMessage(TOPIC_CMD_LAMP_BRIGHT, "800");
+  publishMessage(TOPIC_CMD_LAMP_BRIGHT, "up");
+});
+
+// LAMP intensity DOWN
+allElements.lampIntensityDown.addEventListener("click", () => {
+  if (!hasFirstStatus || !isManualMode) return;
+
+  allElements.lampIntensityDown.classList.add("active-hold");
+  setTimeout(() => allElements.lampIntensityDown.classList.remove("active-hold"), 220);
+
+  publishMessage(TOPIC_CMD_LAMP_BRIGHT, "down");
 });
 
 // LAMP color
