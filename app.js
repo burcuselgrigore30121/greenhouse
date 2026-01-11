@@ -71,7 +71,8 @@ const allElements = {
   lampToggle: document.getElementById("lamp-toggle"),
   lampToggleLabel: document.getElementById("lamp-toggle-label"),
   lampMain: document.getElementById("lamp-main"),
-  lampIntensityBtn: document.getElementById("lamp-intensity-btn"),
+ lampIntensityUp: document.getElementById("lamp-intensity-up"),
+lampIntensityDown: document.getElementById("lamp-intensity-down"),
   lampColorBtn: document.getElementById("lamp-color-btn"),
   lampCard: document.getElementById("lamp-card"),
 
