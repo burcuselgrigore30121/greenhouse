@@ -1,0 +1,16 @@
+**/secrets.py
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+raspberry-pi/data/
+*.db
+*.parquet
+*.csv
+
+ml/models/*.joblib
+ml/models/*.pkl
+
+.DS_Store
+Thumbs.db
