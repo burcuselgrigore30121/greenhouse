@@ -1,0 +1,19 @@
+[Unit]
+Description=Sera AI Controller
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/greenhouse/raspberry-pi/scripts
+Environment=GH_MQTT_BROKER=broker.emqx.io
+Environment=GH_MQTT_PORT=1883
+Environment=GH_DB_PATH=/var/lib/sera/telemetry.sqlite
+Environment=GH_MODEL_PATH=/var/lib/sera/model.joblib
+Environment=GH_MIN_DAYS=7
+ExecStart=/usr/bin/python3 /home/pi/greenhouse/raspberry-pi/scripts/controller_ai.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
