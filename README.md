@@ -1,12 +1,19 @@
-# Smart Greenhouse (ESP32 + Raspberry Pi + MQTT)
+# Smart Greenhouse
 
-- Web UI (MQTT dashboard)
-- ESP32 (MicroPython): sensors + actuators + fail-safe
-- Raspberry Pi: data logging + weekly retraining + AI controller
+Modular IoT project for monitoring and controlling a small greenhouse using ESP32, Raspberry Pi, and MQTT.
 
-Folders:
-- web-ui/        Web dashboard (unchanged design)
-- esp32/         ESP32 firmware
-- raspberry-pi/  Logger + training + AI controller
-- docs/          Architecture + deployment notes
-- ml/            ML experiments and models
+- **ESP32** handles sensors, actuators, and local fail-safe logic  
+- **Raspberry Pi** logs data and performs simple decision logic  
+- **Web UI** provides real-time monitoring and manual control  
+
+The system is designed to be fault-tolerant and easy to extend.
+
+---
+
+## Repository Structure
+
+- `web-ui/` – Web dashboard (MQTT-based)  
+- `esp32/` – ESP32 firmware (MicroPython)  
+- `raspberry-pi/` – Data logging and control logic  
+- `docs/` – Architecture and deployment notes  
+- `ml/` – Experiments and future work  
