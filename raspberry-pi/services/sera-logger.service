@@ -1,0 +1,17 @@
+[Unit]
+Description=Sera MQTT Logger
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/greenhouse/raspberry-pi/scripts
+Environment=GH_MQTT_BROKER=broker.emqx.io
+Environment=GH_MQTT_PORT=1883
+Environment=GH_DB_PATH=/var/lib/sera/telemetry.sqlite
+ExecStart=/usr/bin/python3 /home/pi/greenhouse/raspberry-pi/scripts/logger.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
