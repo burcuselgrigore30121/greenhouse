@@ -1,8 +1,8 @@
 # config.py
 
 # --- WiFi / MQTT (pentru site) ---
-WIFI_SSID = "Galaxy S22 5DBB"
-WIFI_PASS = "vetq4897"
+WIFI_SSID = ""
+WIFI_PASS = ""
 
 MQTT_BROKER = "broker.emqx.io"
 MQTT_PORT = 1883
