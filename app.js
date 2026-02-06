@@ -422,6 +422,7 @@ function startConnect() {
 }
 
 function publishMessage(topic, payload) {
+  console.log("PUB:", topic, payload);
   if (!client || !client.isConnected()) return;
   const m = new Paho.MQTT.Message(String(payload));
   m.destinationName = topic;
