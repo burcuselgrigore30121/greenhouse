@@ -178,27 +178,35 @@
         <div id="device-controls">
           <div class="device-grid">
 
-            <!-- LAMP: only Intensity + Color -->
-            <div class="device-card" id="lamp-card">
-              <div class="device-title">Lamp</div>
+           <!-- LAMP: Power + Intensity + Color -->
+<div class="device-card" id="lamp-card">
+  <div class="device-title">Lamp</div>
 
-              <div class="device-main" id="lamp-main">Manual</div>
+  <div class="device-main" id="lamp-main">Off</div>
 
-              <div class="lamp-actions">
-                <button type="button" class="lamp-ctl-btn" id="lamp-intensity-btn">
-                  <span class="lamp-ctl-icon">☀</span>
-                  <span>Intensity</span>
-                </button>
-                <button type="button" class="lamp-ctl-btn" id="lamp-color-btn">
-                  <span class="lamp-ctl-icon">🎨</span>
-                  <span>Change color</span>
-                </button>
-              </div>
+  <!-- >>> AICI ADAUGI BUTONUL ON/OFF <<< -->
+  <div class="lamp-power">
+    <div id="lamp-toggle" class="toggle"></div>
+    <div id="lamp-toggle-label" class="toggle-label">Off</div>
+  </div>
 
-              <div class="device-sub lamp-hint">
-                Tap <strong>Intensity</strong> to adjust step by step. Tap <strong>Change color</strong> to cycle.
-              </div>
-            </div>
+  <div class="lamp-actions">
+    <button type="button" class="lamp-ctl-btn" id="lamp-intensity-btn">
+      <span class="lamp-ctl-icon">☀</span>
+      <span>Intensity</span>
+    </button>
+    <button type="button" class="lamp-ctl-btn" id="lamp-color-btn">
+      <span class="lamp-ctl-icon">🎨</span>
+      <span>Change color</span>
+    </button>
+  </div>
+
+  <div class="device-sub lamp-hint">
+    Tap <strong>Power</strong> to turn lamp on/off.  
+    Tap <strong>Intensity</strong> to adjust (20/60/100).  
+    Tap <strong>Change color</strong> to cycle.
+  </div>
+</div>
 
             <!-- WATER PUMP -->
             <div class="device-card" id="pump-card">
@@ -278,6 +286,7 @@
   </div>
 </body>
 </html>
+
 
 
 
