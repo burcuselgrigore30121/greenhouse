@@ -65,15 +65,6 @@ function bufMinMax() {
   }
   return { mn, mx };
 }
-function filteredUltra(cm) {
-  // HOLD: dacă noua măsurare nu se schimbă cu >= 2 cm, păstrăm valoarea veche
-  if (ultraStable === null) {
-    ultraStable = cm;
-    ultraBuf = [cm];
-    return { stable: cm, usedAvg: false };
-  }
-
-  pushUltra(cm);
 
   // dacă schimbarea e mică -> nu actualizăm deloc
   if (Math.abs(cm - ultraStable) < ULTRA_DEADBAND_CM) {
@@ -98,6 +89,27 @@ function filteredUltra(cm) {
   ultraStable = cm;
   return { stable: cm, usedAvg: false };
 }
+function filteredUltra(cm) {
+  // HOLD: dacă nu se schimbă cu >= 2 cm, păstrăm valoarea veche
+  if (ultraStable === null) {
+    ultraStable = cm;
+    ultraBuf = [cm];
+    return { stable: cm, usedAvg: false };
+  }
+
+  pushUltra(cm);
+
+  if (Math.abs(cm - ultraStable) < ULTRA_DEADBAND_CM) {
+    return { stable: ultraStable, usedAvg: true };
+  }
+
+  // schimbare suficientă -> mediană din buffer
+  const sorted = ultraBuf.slice().sort((a, b) => a - b);
+  const med = sorted[Math.floor(sorted.length / 2)];
+  ultraStable = med;
+  return { stable: med, usedAvg: false };
+}
+
 function renderTank(cm, usedAvg) {
   if (!allElements.tankCard) return;
   const pct = quantizePct(ultraToPct(cm));
@@ -298,13 +310,13 @@ function onMessageArrived(message) {
       allElements.metricTempTag.className = "metric-tag " + lt.cls;
     }
 
-    if (isFinite(light)) {
-      allElements.lightLine.textContent = `Light: ${light} lx`;
-      allElements.metricLight.textContent = light.toFixed(0);
-      const ll = labelForLight(light);
-      allElements.metricLightTag.textContent = ll.txt;
-      allElements.metricLightTag.className = "metric-tag " + ll.cls;
-    }
+   f (isFinite(light) && isFinite(lightOut)) {
+  allElements.lightLine.textContent = `Light (in): ${light.toFixed(0)} lx · Light (out): ${lightOut.toFixed(0)} %`;
+} else if (isFinite(light)) {
+  allElements.lightLine.textContent = `Light: ${light.toFixed(0)} lx`;
+} else {
+  allElements.lightLine.textContent = `Light: -- lx`;
+}
 
    // Air / soil humidity (folosește real hum_air dacă există)
 if (isFinite(soil)) {
