@@ -523,16 +523,18 @@ function bindEvents() {
   }
 
   // LAMP POWER TOGGLE
-  if (allElements.lampToggle) {
+   if (allElements.lampToggle) {
     allElements.lampToggle.addEventListener("click", () => {
-      // UI feedback imediat
       const on = !allElements.lampToggle.classList.contains("on");
-      allElements.lampToggle.classList.toggle("on", on);
-      if (allElements.lampToggleLabel) allElements.lampToggleLabel.textContent = on ? "On" : "Off";
-      if (allElements.lampMain) allElements.lampMain.textContent = on ? "On" : "Off";
 
-      // comanda doar in manual + dupa primul status
-      if (!hasFirstStatus || !isManualMode) return;
+      // UI feedback imediat
+      allElements.lampToggle.classList.toggle("on", on);
+      if (allElements.lampToggleLabel)
+        allElements.lampToggleLabel.textContent = on ? "On" : "Off";
+      if (allElements.lampMain)
+        allElements.lampMain.textContent = on ? "On" : "Off";
+
+      // TRIMITE MQTT FĂRĂ CONDIȚII
       publishMessage(TOPIC_CMD_LAMP_POWER, on ? "on" : "off");
     });
   }
