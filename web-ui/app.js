@@ -37,10 +37,8 @@ const TANK_CM_EMPTY = 16.0;
 const TANK_CM_FULL = 2.0;
 
 const ULTRA_DEADBAND_CM = 2.0;
-const ULTRA_WINDOW = 6;
 const TANK_STEP_PCT = 5;
 
-let ultraBuf = [];
 let ultraStable = null;
 
 function clamp(v, a, b) {
@@ -57,11 +55,6 @@ function quantizePct(pct) {
   return clamp(Math.round(pct / TANK_STEP_PCT) * TANK_STEP_PCT, 0, 100);
 }
 
-function pushUltra(cm) {
-  ultraBuf.push(cm);
-  if (ultraBuf.length > ULTRA_WINDOW) ultraBuf.shift();
-}
-
 const ULTRA_ALPHA = 0.18;
 const ULTRA_JUMP_CM = 5.0;
 
@@ -71,29 +64,22 @@ function filteredUltra(cm) {
     return { stable: cm, usedAvg: false };
   }
 
+  // ignore spikes
   if (Math.abs(cm - ultraStable) > ULTRA_JUMP_CM) {
     return { stable: ultraStable, usedAvg: true };
   }
 
+  // deadband
   if (Math.abs(cm - ultraStable) < ULTRA_DEADBAND_CM) {
     return { stable: ultraStable, usedAvg: true };
   }
 
+  // EMA low-pass
   ultraStable = ultraStable + ULTRA_ALPHA * (cm - ultraStable);
   return { stable: ultraStable, usedAvg: false };
 }
 
-
-  if (Math.abs(cm - ultraStable) < ULTRA_DEADBAND_CM) {
-    return { stable: ultraStable, usedAvg: true };
-  }
-
-  const sorted = ultraBuf.slice().sort((a, b) => a - b);
-  const med = sorted[Math.floor(sorted.length / 2)];
-  ultraStable = med;
-  return { stable: med, usedAvg: false };
-}
-pushUltra(cm)
+  
 // =====================
 // STATE
 // =====================
