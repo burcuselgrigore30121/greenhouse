@@ -533,7 +533,13 @@ input[type="range"]:disabled { background: #e5e7eb; }
   box-shadow: 0 16px 40px rgba(15,23,42,0.10);
   overflow:hidden;
   --tank-level: 0%;
+
+  /* NEW */
+  display: flex;
+  flex-direction: column;
+  min-height: 360px; /* ajustează (ex: 320..520) */
 }
+
 .tank-top{
   display:flex;
   justify-content:space-between;
@@ -565,20 +571,25 @@ input[type="range"]:disabled { background: #e5e7eb; }
   font-weight:600;
 }
 .tank-visual{
+  /* NEW */
+  flex: 1 1 auto;
   display:flex;
   gap:12px;
-  align-items:center;
+  align-items: stretch; /* important: să se întindă pe verticală */
 }
+
 .tank-glass{
   position:relative;
   flex:1;
-  height: 86px;
+  height: auto;           /* NEW */
+  min-height: 220px;      /* NEW: să nu fie mic */
   border-radius: 16px;
   background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(249,250,251,0.88));
   border: 1px solid rgba(226,232,240,0.95);
   box-shadow: 0 10px 24px rgba(15,23,42,0.10);
   overflow:hidden;
 }
+
 .tank-water{
   position:absolute;
   left:0; right:0; bottom:0;
@@ -590,7 +601,7 @@ input[type="range"]:disabled { background: #e5e7eb; }
   position:absolute;
   left:-30%;
   right:-30%;
-  bottom: calc(var(--tank-level) - 10px);
+  bottom: calc(var(--tank-level) - 12px);
   height: 18px;
   background:
     radial-gradient(circle at 20% 60%, rgba(59,130,246,0.35) 0 30%, transparent 31%),
@@ -600,6 +611,7 @@ input[type="range"]:disabled { background: #e5e7eb; }
   opacity: 0.9;
   animation: tankWave 2.6s linear infinite;
   pointer-events:none;
+  transform: translateZ(0);
 }
 @keyframes tankWave { 0% { transform: translateX(0); } 100% { transform: translateX(18%); } }
 .tank-scale{
