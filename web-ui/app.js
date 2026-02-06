@@ -33,8 +33,8 @@ const TOPIC_CMD_FLOWER_VALVE_POWER = "sera/comenzi/valva/flori/power"; // "on"/"
 // =====================
 // Calibrezi cu rigla: distanta in cm de la senzor la apa
 // GOL => distanta mai mare, PLIN => distanta mai mica
-const TANK_CM_EMPTY = 28.0;
-const TANK_CM_FULL  = 6.0;
+const TANK_CM_EMPTY = 16.0; // minim: 16 cm (gol)
+const TANK_CM_FULL  = 2.0;  // maxim: 2 cm (plin)
 
 const ULTRA_DEADBAND_CM = 2.0;  // eroare ±2 cm
 const ULTRA_WINDOW = 6;         // min/max window
@@ -66,11 +66,27 @@ function bufMinMax() {
   return { mn, mx };
 }
 function filteredUltra(cm) {
+  // HOLD: dacă noua măsurare nu se schimbă cu >= 2 cm, păstrăm valoarea veche
   if (ultraStable === null) {
     ultraStable = cm;
     ultraBuf = [cm];
     return { stable: cm, usedAvg: false };
   }
+
+  pushUltra(cm);
+
+  // dacă schimbarea e mică -> nu actualizăm deloc
+  if (Math.abs(cm - ultraStable) < ULTRA_DEADBAND_CM) {
+    return { stable: ultraStable, usedAvg: true };
+  }
+
+  // schimbare suficientă -> folosim mediană din buffer ca să evităm spike-uri
+  const sorted = ultraBuf.slice().sort((a, b) => a - b);
+  const med = sorted[Math.floor(sorted.length / 2)];
+  ultraStable = med;
+  return { stable: med, usedAvg: false };
+}
+
   pushUltra(cm);
   const { mn, mx } = bufMinMax();
 
@@ -291,11 +307,18 @@ function onMessageArrived(message) {
     }
 
    // Air / soil humidity (folosește real hum_air dacă există)
-if (isFinite(humAir) && isFinite(soil)) {
-  allElements.humidLine.textContent = `${humAir.toFixed(0)} % / ${soil.toFixed(0)} %`;
-} else if (isFinite(soil)) {
-  allElements.humidLine.textContent = `-- % / ${soil.toFixed(0)} %`;
+if (isFinite(soil)) {
+  if (isFinite(humAir)) {
+    allElements.humidLine.textContent =
+      `${humAir.toFixed(0)} % / ${soil.toFixed(0)} %`;
+  } else {
+    allElements.humidLine.textContent =
+      `-- % / ${soil.toFixed(0)} %`;
+  }
+} else {
+  allElements.humidLine.textContent = `-- % / -- %`;
 }
+
 
 // Light line: interior lux + exterior %
 if (isFinite(light) && isFinite(lightOut)) {
