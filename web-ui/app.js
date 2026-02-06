@@ -105,12 +105,12 @@ const allElements = {
   lightLine: $("light-line"),
 
   metricTemp: $("metric-temp"),
-  metricLight: $("metric-light"),
+  
   metricSoil: $("metric-soil"),
   metricWater: $("metric-water"),
 
   metricTempTag: $("metric-temp-tag"),
-  metricLightTag: $("metric-light-tag"),
+  ,
   metricSoilTag: $("metric-soil-tag"),
   metricWaterTag: $("metric-water-tag"),
 
@@ -314,12 +314,7 @@ function onMessageArrived(message) {
       allElements.lightLine.textContent = txt;
     }
 // Light metric (card)
-if (isFinite(light)) {
-  allElements.metricLight.textContent = light.toFixed(0);
-  allElements.metricLightTag.textContent = light >= 500 ? "OK" : "Low";
-  allElements.metricLightTag.className =
-    "metric-tag " + (light >= 500 ? "good" : "bad");
-}
+
     // Humid line
     if (isFinite(soil) && allElements.humidLine) {
       const airPart = isFinite(humAir) ? `${humAir.toFixed(0)} %` : "-- %";
@@ -327,11 +322,17 @@ if (isFinite(light)) {
     }
 
     // Soil metric (card)
-if (isFinite(soil)) {
+if (isFinite(soil) && allElements.metricSoil) {
   allElements.metricSoil.textContent = soil.toFixed(0);
-  const ls = labelForSoil(soil);
-  allElements.metricSoilTag.textContent = ls.txt;
-  allElements.metricSoilTag.className = "metric-tag " + ls.cls;
+}
+if (isFinite(soil) && allElements.metricSoilTag) {
+  let txt = "--";
+  let cls = "";
+  if (soil >= 40 && soil <= 80) { txt = "Moist"; cls = "good"; }
+  else if (soil < 40) { txt = "Dry"; cls = "bad"; }
+  else { txt = "Too wet"; cls = "bad"; }
+  allElements.metricSoilTag.textContent = txt;
+  allElements.metricSoilTag.className = "metric-tag " + cls;
 }
     // Water metric
     if (isFinite(water)) {
