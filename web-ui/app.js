@@ -62,14 +62,27 @@ function pushUltra(cm) {
   if (ultraBuf.length > ULTRA_WINDOW) ultraBuf.shift();
 }
 
+const ULTRA_ALPHA = 0.18;
+const ULTRA_JUMP_CM = 5.0;
+
 function filteredUltra(cm) {
   if (ultraStable === null) {
     ultraStable = cm;
-    ultraBuf = [cm];
     return { stable: cm, usedAvg: false };
   }
 
-  pushUltra(cm);
+  if (Math.abs(cm - ultraStable) > ULTRA_JUMP_CM) {
+    return { stable: ultraStable, usedAvg: true };
+  }
+
+  if (Math.abs(cm - ultraStable) < ULTRA_DEADBAND_CM) {
+    return { stable: ultraStable, usedAvg: true };
+  }
+
+  ultraStable = ultraStable + ULTRA_ALPHA * (cm - ultraStable);
+  return { stable: ultraStable, usedAvg: false };
+}
+
 
   if (Math.abs(cm - ultraStable) < ULTRA_DEADBAND_CM) {
     return { stable: ultraStable, usedAvg: true };
@@ -80,7 +93,7 @@ function filteredUltra(cm) {
   ultraStable = med;
   return { stable: med, usedAvg: false };
 }
-
+pushUltra(cm)
 // =====================
 // STATE
 // =====================
@@ -314,13 +327,26 @@ function onMessageArrived(message) {
       if (isFinite(lightOut)) txt += ` · Light (out): ${lightOut.toFixed(0)} %`;
       allElements.lightLine.textContent = txt;
     }
-
+// Light metric (card)
+if (isFinite(light)) {
+  allElements.metricLight.textContent = light.toFixed(0);
+  allElements.metricLightTag.textContent = light >= 500 ? "OK" : "Low";
+  allElements.metricLightTag.className =
+    "metric-tag " + (light >= 500 ? "good" : "bad");
+}
     // Humid line
     if (isFinite(soil) && allElements.humidLine) {
       const airPart = isFinite(humAir) ? `${humAir.toFixed(0)} %` : "-- %";
       allElements.humidLine.textContent = `${airPart} / ${soil.toFixed(0)} %`;
     }
 
+    // Soil metric (card)
+if (isFinite(soil)) {
+  allElements.metricSoil.textContent = soil.toFixed(0);
+  const ls = labelForSoil(soil);
+  allElements.metricSoilTag.textContent = ls.txt;
+  allElements.metricSoilTag.className = "metric-tag " + ls.cls;
+}
     // Water metric
     if (isFinite(water)) {
       if (allElements.metricWater) allElements.metricWater.textContent = water.toFixed(0);
