@@ -18,6 +18,7 @@ const TOPIC_STAT_SENZORI = "sera/stare/senzori";
 const TOPIC_CMD_MODE = "sera/comenzi/mod";
 const TOPIC_CMD_FAN = "sera/comenzi/ventilator";
 
+const TOPIC_CMD_LAMP_POWER = "sera/comenzi/lampa/power"; // "on"/"off"
 const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/intensity"; // numeric step
 const TOPIC_CMD_LAMP_COLOR = "sera/comenzi/lampa/color"; // "cycle"
 
