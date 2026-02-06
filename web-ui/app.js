@@ -110,7 +110,6 @@ const allElements = {
   metricWater: $("metric-water"),
 
   metricTempTag: $("metric-temp-tag"),
-  
   metricSoilTag: $("metric-soil-tag"),
   metricWaterTag: $("metric-water-tag"),
 
