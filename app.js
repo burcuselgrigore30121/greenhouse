@@ -5,7 +5,7 @@
 // =====================
 const MQTT_HOST = "broker.emqx.io";
 const MQTT_PORT = 8084; // WSS
-const MQTT_PATH = "/mqtt"; // IMPORTANT for most brokers / EMQX
+const MQTT_PATH = "/mqtt";
 const MQTT_USER = "";
 const MQTT_PASS = "";
 const MQTT_CLIENT_ID =
@@ -18,9 +18,9 @@ const TOPIC_STAT_SENZORI = "sera/stare/senzori";
 const TOPIC_CMD_MODE = "sera/comenzi/mod";
 const TOPIC_CMD_FAN = "sera/comenzi/ventilator";
 
-const TOPIC_CMD_LAMP_POWER = "sera/comenzi/lampa/power"; // "on"/"off"
-const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/intensity"; // numeric step
-const TOPIC_CMD_LAMP_COLOR = "sera/comenzi/lampa/color"; // "cycle"
+const TOPIC_CMD_LAMP_POWER = "sera/comenzi/lampa/power";     // "on"/"off"
+const TOPIC_CMD_LAMP_BRIGHT = "sera/comenzi/lampa/intensity"; // "20"/"60"/"100"
+const TOPIC_CMD_LAMP_COLOR = "sera/comenzi/lampa/color";      // "cycle"
 
 const TOPIC_CMD_PUMP_POWER = "sera/comenzi/pompa/power"; // "on"/"off"
 const TOPIC_CMD_PUMP_SPEED = "sera/comenzi/pompa/speed"; // 0..100
@@ -47,8 +47,7 @@ function clamp(v, a, b) {
 }
 
 function ultraToPct(cm) {
-  const pct =
-    ((TANK_CM_EMPTY - cm) * 100) / (TANK_CM_EMPTY - TANK_CM_FULL);
+  const pct = ((TANK_CM_EMPTY - cm) * 100) / (TANK_CM_EMPTY - TANK_CM_FULL);
   return clamp(pct, 0, 100);
 }
 
@@ -64,28 +63,25 @@ function filteredUltra(cm) {
     ultraStable = cm;
     return { stable: cm, usedAvg: false };
   }
-
-  // ignore spikes
   if (Math.abs(cm - ultraStable) > ULTRA_JUMP_CM) {
     return { stable: ultraStable, usedAvg: true };
   }
-
-  // deadband
   if (Math.abs(cm - ultraStable) < ULTRA_DEADBAND_CM) {
     return { stable: ultraStable, usedAvg: true };
   }
-
-  // EMA low-pass
   ultraStable = ultraStable + ULTRA_ALPHA * (cm - ultraStable);
   return { stable: ultraStable, usedAvg: false };
 }
 
-  
 // =====================
 // STATE
 // =====================
 let isManualMode = false;
 let hasFirstStatus = false;
+
+// Lamp intensity cycle: 20 -> 60 -> 100
+let lampLevelIdx = 1;
+const LAMP_LEVELS = ["20", "60", "100"];
 
 // =====================
 // DOM SAFE GETTERS
@@ -106,7 +102,6 @@ const allElements = {
   lightLine: $("light-line"),
 
   metricTemp: $("metric-temp"),
-  
   metricSoil: $("metric-soil"),
   metricWater: $("metric-water"),
 
@@ -133,11 +128,15 @@ const allElements = {
   tankCm: $("tank-cm"),
   tankStable: $("tank-stable"),
 
+  // LAMP
   lampMain: $("lamp-main"),
   lampIntensityBtn: $("lamp-intensity-btn"),
   lampColorBtn: $("lamp-color-btn"),
   lampCard: $("lamp-card"),
+  lampToggle: $("lamp-toggle"),
+  lampToggleLabel: $("lamp-toggle-label"),
 
+  // PUMP
   pumpToggle: $("pump-toggle"),
   pumpToggleLabel: $("pump-toggle-label"),
   pumpMain: $("pump-main"),
@@ -226,8 +225,7 @@ function updateFanVisual() {
 }
 
 function renderTank(cm, usedAvg) {
-  if (!allElements.tankCard || !allElements.tankPct || !allElements.tankCm)
-    return;
+  if (!allElements.tankCard || !allElements.tankPct || !allElements.tankCm) return;
   const pct = quantizePct(ultraToPct(cm));
   allElements.tankPct.textContent = pct.toFixed(0);
   allElements.tankCm.textContent = `${cm.toFixed(1)} cm`;
@@ -244,15 +242,13 @@ function publishStatus(text, connected) {
 }
 
 // =====================
-// MQTT CLIENT (SAFE)
+// MQTT CLIENT
 // =====================
 let client = null;
 
 function setupMqttClient() {
   if (typeof Paho === "undefined" || !Paho.MQTT) {
-    console.error(
-      "Paho MQTT not loaded. Add mqttws31.min.js before app.js in index.html."
-    );
+    console.error("Paho MQTT not loaded. Add mqttws31.min.js before app.js in index.html.");
     publishStatus("MQTT lib missing", false);
     return null;
   }
@@ -296,9 +292,7 @@ function onMessageArrived(message) {
     // Temp UI
     if (isFinite(t)) {
       if (allElements.tempMain)
-        allElements.tempMain.innerHTML = `${t.toFixed(
-          1
-        )}<span>°C</span>`;
+        allElements.tempMain.innerHTML = `${t.toFixed(1)}<span>°C</span>`;
       if (allElements.metricTemp) allElements.metricTemp.textContent = t.toFixed(1);
       if (allElements.metricTempTag) {
         const lt = labelForTemp(t);
@@ -313,7 +307,6 @@ function onMessageArrived(message) {
       if (isFinite(lightOut)) txt += ` · Light (out): ${lightOut.toFixed(0)} %`;
       allElements.lightLine.textContent = txt;
     }
-// Light metric (card)
 
     // Humid line
     if (isFinite(soil) && allElements.humidLine) {
@@ -321,19 +314,20 @@ function onMessageArrived(message) {
       allElements.humidLine.textContent = `${airPart} / ${soil.toFixed(0)} %`;
     }
 
-    // Soil metric (card)
-if (isFinite(soil) && allElements.metricSoil) {
-  allElements.metricSoil.textContent = soil.toFixed(0);
-}
-if (isFinite(soil) && allElements.metricSoilTag) {
-  let txt = "--";
-  let cls = "";
-  if (soil >= 40 && soil <= 80) { txt = "Moist"; cls = "good"; }
-  else if (soil < 40) { txt = "Dry"; cls = "bad"; }
-  else { txt = "Too wet"; cls = "bad"; }
-  allElements.metricSoilTag.textContent = txt;
-  allElements.metricSoilTag.className = "metric-tag " + cls;
-}
+    // Soil metric
+    if (isFinite(soil) && allElements.metricSoil) {
+      allElements.metricSoil.textContent = soil.toFixed(0);
+    }
+    if (isFinite(soil) && allElements.metricSoilTag) {
+      let txt = "--";
+      let cls = "";
+      if (soil >= 40 && soil <= 80) { txt = "Moist"; cls = "good"; }
+      else if (soil < 40) { txt = "Dry"; cls = "bad"; }
+      else { txt = "Too wet"; cls = "bad"; }
+      allElements.metricSoilTag.textContent = txt;
+      allElements.metricSoilTag.className = "metric-tag " + cls;
+    }
+
     // Water metric
     if (isFinite(water)) {
       if (allElements.metricWater) allElements.metricWater.textContent = water.toFixed(0);
@@ -358,6 +352,20 @@ if (isFinite(soil) && allElements.metricSoilTag) {
     // Mode sync
     const manualFromDevice = data.mode === "manual";
     setModeUI(manualFromDevice, false);
+
+    // Lamp sync from device truth
+    if (typeof data.lamp_power !== "undefined" && allElements.lampToggle) {
+      const on = Number(data.lamp_power) === 1;
+      allElements.lampToggle.classList.toggle("on", on);
+      if (allElements.lampToggleLabel) allElements.lampToggleLabel.textContent = on ? "On" : "Off";
+      if (allElements.lampMain) {
+        if (typeof data.lamp_level === "number" && typeof data.lamp_color === "string") {
+          allElements.lampMain.textContent = on ? `${data.lamp_color} · ${data.lamp_level}%` : "Off";
+        } else {
+          allElements.lampMain.textContent = on ? "On" : "Off";
+        }
+      }
+    }
 
     // Sync fan slider
     if (
@@ -457,6 +465,11 @@ function resetManualControls() {
     allElements.flowerToggle.classList.remove("on");
     if (allElements.flowerToggleLabel) allElements.flowerToggleLabel.textContent = "Off";
   }
+
+  // reset lamp UI
+  if (allElements.lampToggle) allElements.lampToggle.classList.remove("on");
+  if (allElements.lampToggleLabel) allElements.lampToggleLabel.textContent = "Off";
+  if (allElements.lampMain) allElements.lampMain.textContent = "Off";
 }
 
 function setModeUI(manual, publish) {
@@ -488,7 +501,7 @@ function setModeUI(manual, publish) {
 }
 
 // =====================
-// EVENTS (SAFE BINDS)
+// EVENTS
 // =====================
 function bindEvents() {
   if (allElements.btnAuto)
@@ -509,18 +522,34 @@ function bindEvents() {
     });
   }
 
+  // LAMP POWER TOGGLE
+  if (allElements.lampToggle) {
+    allElements.lampToggle.addEventListener("click", () => {
+      // UI feedback imediat
+      const on = !allElements.lampToggle.classList.contains("on");
+      allElements.lampToggle.classList.toggle("on", on);
+      if (allElements.lampToggleLabel) allElements.lampToggleLabel.textContent = on ? "On" : "Off";
+      if (allElements.lampMain) allElements.lampMain.textContent = on ? "On" : "Off";
+
+      // comanda doar in manual + dupa primul status
+      if (!hasFirstStatus || !isManualMode) return;
+      publishMessage(TOPIC_CMD_LAMP_POWER, on ? "on" : "off");
+    });
+  }
+
+  // LAMP INTENSITY (20/60/100 cycling)
   if (allElements.lampIntensityBtn) {
     allElements.lampIntensityBtn.addEventListener("click", () => {
       if (!hasFirstStatus || !isManualMode) return;
       allElements.lampIntensityBtn.classList.add("active-hold");
-      setTimeout(
-        () => allElements.lampIntensityBtn.classList.remove("active-hold"),
-        220
-      );
-      publishMessage(TOPIC_CMD_LAMP_BRIGHT, "80");
+      setTimeout(() => allElements.lampIntensityBtn.classList.remove("active-hold"), 220);
+
+      publishMessage(TOPIC_CMD_LAMP_BRIGHT, LAMP_LEVELS[lampLevelIdx]);
+      lampLevelIdx = (lampLevelIdx + 1) % LAMP_LEVELS.length;
     });
   }
 
+  // LAMP COLOR
   if (allElements.lampColorBtn) {
     allElements.lampColorBtn.addEventListener("click", () => {
       if (!hasFirstStatus || !isManualMode) return;
@@ -547,8 +576,7 @@ function bindEvents() {
       const v = Number(allElements.pumpSlider.value);
       if (allElements.pumpValue) allElements.pumpValue.textContent = `${v}%`;
       updateSliderFill(allElements.pumpSlider, "#3b82f6");
-      if (allElements.pumpCard)
-        allElements.pumpCard.style.setProperty("--pump-level", v + "%");
+      if (allElements.pumpCard) allElements.pumpCard.style.setProperty("--pump-level", v + "%");
     });
     allElements.pumpSlider.addEventListener("change", () => {
       if (!hasFirstStatus || !isManualMode) return;
@@ -574,7 +602,8 @@ function bindEvents() {
       const alpha = 0.15 + 0.35 * r;
       const shadow = 12 + 18 * r;
       const borderAlpha = 0.3 + 0.5 * r;
-      allElements.heatCard.style.background = `radial-gradient(circle at 0% 0%, rgba(249,115,22,${alpha}), #fefce8 50%, #f9fafb 100%)`;
+      allElements.heatCard.style.background =
+        `radial-gradient(circle at 0% 0%, rgba(249,115,22,${alpha}), #fefce8 50%, #f9fafb 100%)`;
       allElements.heatCard.style.borderColor = `rgba(248,171,89,${borderAlpha})`;
       allElements.heatCard.style.boxShadow = `0 ${shadow}px ${shadow * 2}px rgba(248,171,89,0.6)`;
     });
@@ -620,10 +649,9 @@ function bindEvents() {
 }
 
 // =====================
-// INIT (RUN AFTER DOM READY)
+// INIT
 // =====================
 function init() {
-  // sliders initial fill
   [allElements.fanSlider, allElements.pumpSlider, allElements.heatSlider].forEach(
     (s) => s && updateSliderFill(s)
   );
