@@ -271,6 +271,8 @@ function onMessageArrived(message) {
     const light = Number(data.light);
     const soil = Number(data.soil);
     const water = Number(data.water);
+    const lightOut = Number(data.light_out); // TEMT6000 (%)
+    const humAir = Number(data.hum_air);
 
     if (isFinite(t)) {
       allElements.tempMain.innerHTML = `${t.toFixed(1)}<span>°C</span>`;
@@ -288,13 +290,22 @@ function onMessageArrived(message) {
       allElements.metricLightTag.className = "metric-tag " + ll.cls;
     }
 
-    if (isFinite(soil)) {
-      allElements.humidLine.textContent = `-- % / ${soil.toFixed(0)} %`;
-      allElements.metricSoil.textContent = soil.toFixed(0);
-      const ls = labelForSoil(soil);
-      allElements.metricSoilTag.textContent = ls.txt;
-      allElements.metricSoilTag.className = "metric-tag " + ls.cls;
-    }
+   // Air / soil humidity (folosește real hum_air dacă există)
+if (isFinite(humAir) && isFinite(soil)) {
+  allElements.humidLine.textContent = `${humAir.toFixed(0)} % / ${soil.toFixed(0)} %`;
+} else if (isFinite(soil)) {
+  allElements.humidLine.textContent = `-- % / ${soil.toFixed(0)} %`;
+}
+
+// Light line: interior lux + exterior %
+if (isFinite(light) && isFinite(lightOut)) {
+  allElements.lightLine.textContent = `Light (in): ${light.toFixed(0)} lx · Light (out): ${lightOut.toFixed(0)} %`;
+} else if (isFinite(light)) {
+  allElements.lightLine.textContent = `Light: ${light.toFixed(0)} lx`;
+} else {
+  allElements.lightLine.textContent = `Light: -- lx`;
+}
+
 
     if (isFinite(water)) {
       allElements.metricWater.textContent = water.toFixed(0);
