@@ -3,7 +3,7 @@
 Modular IoT project for monitoring and controlling a small greenhouse using ESP32, Raspberry Pi, and MQTT.
 
 - **ESP32** handles sensors, actuators, and local fail-safe logic  
-- **Raspberry Pi** logs data and performs simple decision logic  
+- **Raspberry Pi** collected operational data streams used as datasets for AI model training.
 - **Web UI** provides real-time monitoring and manual control  
 
 The system is designed to be fault-tolerant and easy to extend.
