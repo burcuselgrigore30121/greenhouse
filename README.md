@@ -52,5 +52,7 @@ The system is designed to be fault-tolerant and easy to extend.
 
 ### Control Modules
 
-- **4-Channel Relay Module** – Switching high-power components (lights, pump, heater)  
-- **MOSFET Driver Module** – PWM control for DC loads (fan, pump)
+### Control Modules
+- **4-Channel Relay Module** – Switches high-power components (lights, pump, heater)  
+- **MOSFET Driver Module** – PWM control for DC loads (fan, pump)  
+- **L298N Motor Driver Module** – Controls LED lamp intensity and color channels  
