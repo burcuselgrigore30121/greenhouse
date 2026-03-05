@@ -35,10 +35,11 @@ The system is designed to be fault-tolerant and easy to extend.
 
 ### Sensors
 
-- **BME280** – Temperature, humidity, and atmospheric pressure sensor  
-- **BH1750** – Digital light intensity sensor (Lux)  
-- **Water Level Sensor** – Detects water level in the reservoir  
-- **Soil Moisture Sensor** – Monitors soil hydration levels  
+- **BME280** – Measures temperature, humidity, and atmospheric pressure  
+- **BH1750** – Measures light intensity (Lux)  
+- **Ultrasonic Distance Sensor** – Measures distance  
+- **Water Level Sensor** – Measures water level in the reservoir  
+- **Soil Moisture Sensor** – Measures soil moisture
 
 ### Actuators
 
