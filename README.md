@@ -50,7 +50,6 @@ The system is designed to be fault-tolerant and easy to extend.
 - **LED Grow Lights** – Provides required light spectrum for plant growth  
 - **DC Fan** – Air circulation and temperature regulation  
 
-### Control Modules
 
 ### Control Modules
 - **4-Channel Relay Module** – Switches high-power components (lights, pump, heater)  
