@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Greenhouse logo">
+  <defs>
+    <linearGradient id="leaf" x1="38" y1="198" x2="210" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0b7a4b"/>
+      <stop offset="1" stop-color="#79dc92"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="48" y1="58" x2="212" y2="212" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#effff5"/>
+      <stop offset="1" stop-color="#bcebd1"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="58" fill="#eaffef"/>
+  <path d="M42 126 128 52l86 74v74a14 14 0 0 1-14 14H56a14 14 0 0 1-14-14v-74Z" fill="url(#glass)" stroke="#0b7a4b" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M76 214v-70c0-30 23-54 52-54s52 24 52 54v70" fill="none" stroke="#0b7a4b" stroke-width="10" stroke-linecap="round"/>
+  <path d="M128 214V98" stroke="#0b7a4b" stroke-width="10" stroke-linecap="round"/>
+  <path d="M122 150c-30-2-49-23-51-55 34 1 55 18 58 50 1 4-3 6-7 5Z" fill="url(#leaf)"/>
+  <path d="M135 166c35-2 58-26 61-64-40 1-64 21-68 58-1 4 3 7 7 6Z" fill="url(#leaf)"/>
+  <path d="M128 176c-14-28-32-52-54-75M128 176c16-31 38-55 65-75" fill="none" stroke="#f7fff9" stroke-width="7" stroke-linecap="round"/>
+</svg>
