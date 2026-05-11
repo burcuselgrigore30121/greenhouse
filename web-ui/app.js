@@ -525,7 +525,7 @@ function bindEvents() {
 
   // LAMP POWER TOGGLE
    if (allElements.lampToggle) {
-    allElements.lampToggle.addEventListener("click", () => {
+    const toggleLampPower = () => {
       const on = !allElements.lampToggle.classList.contains("on");
 
       // UI feedback imediat
@@ -537,6 +537,14 @@ function bindEvents() {
 
       // TRIMITE MQTT FĂRĂ CONDIȚII
       publishMessage(TOPIC_CMD_LAMP_POWER, on ? "on" : "off");
+    };
+
+    allElements.lampToggle.addEventListener("click", toggleLampPower);
+    allElements.lampToggle.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleLampPower();
+      }
     });
   }
 
